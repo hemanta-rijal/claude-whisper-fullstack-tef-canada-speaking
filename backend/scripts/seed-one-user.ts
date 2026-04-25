@@ -31,10 +31,8 @@ async function main(): Promise<void> {
       passwordHash: hashedPassword,
     },
     update: {
-      // If you re-run seeding, just refresh the hash (useful if you change SEED_DEV_PASSWORD)
       passwordHash: hashedPassword,
     },
-    // `select` limits what Prisma returns (avoid selecting/logging `passwordHash`)
     select: { id: true, email: true },
   });
 

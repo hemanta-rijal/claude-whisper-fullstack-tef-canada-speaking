@@ -22,6 +22,26 @@ model User {
 
   @@unique([oauthProvider, oauthProviderAccountId])
   @@index([oauthProviderAccountId])
+
+  // One user can have many active sessions (one per device/browser).
+  sessions Session[]
+}
+
+model Session {
+  id     String @id @default(cuid())
+  userId String
+  // Prisma relation: `Session.userId` references `User.id`
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  lastSeenAt DateTime?
+  ip         String?
+  userAgent  String?
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 enum AuthProvider {
