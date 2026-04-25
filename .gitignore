@@ -3,6 +3,10 @@ dist/
 .angular/
 *.log
 .env
+# Common variants people accidentally create locally; keep `backend/.env.example` committed as a template.
+.env.*
+.envrc
+.cursor/
 .DS_Store
 coverage/
 *.local

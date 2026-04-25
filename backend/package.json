@@ -3,15 +3,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "prebuild": "prisma generate",
+    "build": "tsc -p tsconfig.json",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "db:ping": "echo \"SELECT 1;\" | prisma db execute --stdin --schema prisma/schema.prisma",
+    "seed:dev-user": "tsx scripts/seed-one-user.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "multer": "^2.1.1",
-    "openai": "^4.77.3"
+    "@prisma/client": "^6.19.0",
+    "bcryptjs": "^3.0.3",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "prisma": "^6.19.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
   }
 }

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // TypeScript-specific: this enables strict type-checking across the project.
+    "strict": true,
+
+    // Node/ESM-specific: align TS module output with `"type": "module"` in package.json.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    // Modern JS target for current Node.
+    "target": "ES2022",
+    "lib": ["ES2022"],
+
+    // Interop + quality-of-life.
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    // Build output (used when you run `npm run build`).
+    // TypeScript-specific: `rootDir` controls how TS mirrors folders into `outDir`.
+    // We include both `src/` and `scripts/` in this project so one-off Prisma seed scripts
+    // typecheck against the same generated `@prisma/client` types as the server code.
+    "rootDir": ".",
+    "outDir": "dist",
+
+    // Good defaults for tooling.
+    "noEmitOnError": true
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts"]
+}
+
