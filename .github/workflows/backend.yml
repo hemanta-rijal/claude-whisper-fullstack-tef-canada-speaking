@@ -149,14 +149,10 @@ jobs:
                 break
               fi
             done
-
-            # Run Prisma migrations against the production database BEFORE starting the app.
-            # Creates or updates tables — safe to run on every deploy, never destroys data.
-            docker run --rm --network host $ENV_FILE_ARG "$IMAGE" npx prisma migrate deploy
-
-            # Start (or restart) the main application container
-            docker stop backend || true
-            docker rm backend || true
+            # Run Prisma migrations before starting the server
+            docker run --rm --network host $ENV_FILE_ARG "$IMAGE" \
+              npx prisma migrate deploy
+            # Start the backend server
             docker run -d --name backend --restart unless-stopped \
               --network host \
               $ENV_FILE_ARG "$IMAGE"
