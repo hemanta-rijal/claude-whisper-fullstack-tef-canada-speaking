@@ -2,5 +2,5 @@
 // Change apiUrl to your deployed backend URL before running `ng build`.
 export const environment = {
   production: true,
-  apiUrl: 'https://your-api.example.com',
+  apiUrl: 'https://rethinknepal.com/api',
 };
