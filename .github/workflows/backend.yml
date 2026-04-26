@@ -149,6 +149,6 @@ jobs:
                 break
               fi
             done
-            docker run -d --name backend --restart unless-stopped -p 3030:3000 \
-              --add-host=host.docker.internal:host-gateway \
+            docker run -d --name backend --restart unless-stopped \
+              --network host \
               $ENV_FILE_ARG "$IMAGE"
