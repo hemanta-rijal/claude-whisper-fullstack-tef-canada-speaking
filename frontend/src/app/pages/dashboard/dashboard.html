@@ -1,0 +1,131 @@
+<div class="dashboard">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="dashboard-nav">
+    <div class="dashboard-nav__brand">
+      <div class="brand-icon">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <p>TEF Canada</p>
+        <p>Speaking Evaluation</p>
+      </div>
+    </div>
+
+    <div class="dashboard-nav__actions">
+      <span class="dashboard-nav__user">
+        {{ auth.currentUser()?.name ?? auth.currentUser()?.email }}
+      </span>
+      <button class="dashboard-nav__signout" (click)="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <!-- ── Page body ───────────────────────────────────────────────────────── -->
+  <div class="dashboard-content">
+
+    <div class="dashboard-header">
+      <div>
+        <h2>Your Results</h2>
+        <p>Review your past speaking evaluations</p>
+      </div>
+      <a routerLink="/exam/select" class="btn btn--primary btn--sm">+ New Exam</a>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="dashboard-loading">
+        <span class="spinner spinner--accent"></span>
+      </div>
+    }
+
+    <!-- Empty -->
+    @else if (results().length === 0) {
+      <div class="dashboard-empty">
+        <div class="empty-icon">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+          </svg>
+        </div>
+        <h3>No exams yet</h3>
+        <p>Take your first TEF Canada speaking exam to see your score breakdown here.</p>
+        <a routerLink="/exam/select" class="btn btn--primary">Start your first exam</a>
+      </div>
+    }
+
+    <!-- Results list -->
+    @else {
+      <div class="result-list">
+        @for (result of results(); track result.id) {
+
+          <!-- Score helper variables -->
+          @let isHigh = result.overallScore >= 4;
+          @let isMid  = result.overallScore >= 3 && result.overallScore < 4;
+
+          <a class="result-card" [routerLink]="['/results', result.id]">
+
+            <!-- Score badge -->
+            <div class="result-card__score"
+              [class.result-card__score--high]="isHigh"
+              [class.result-card__score--mid]="isMid"
+              [class.result-card__score--low]="!isHigh && !isMid"
+            >
+              <span class="score-num"
+                [class.score-num--high]="isHigh"
+                [class.score-num--mid]="isMid"
+                [class.score-num--low]="!isHigh && !isMid"
+              >{{ result.overallScore }}</span>
+              <span class="score-denom">/5</span>
+            </div>
+
+            <!-- Details -->
+            <div class="result-card__body">
+              <div class="result-card__meta">
+                <span class="section-label">Section {{ result.sections }}</span>
+                <span class="dot">·</span>
+                <span class="date-label">{{ result.completedAt | date:'MMM d, y · h:mm a' }}</span>
+                <span class="dot">·</span>
+                @if (result.cefrLevel) {
+                  <span class="cefr-chip"
+                    [class.cefr-chip--a]="result.cefrLevel === 'A1' || result.cefrLevel === 'A2'"
+                    [class.cefr-chip--b]="result.cefrLevel === 'B1' || result.cefrLevel === 'B2'"
+                    [class.cefr-chip--c]="result.cefrLevel === 'C1' || result.cefrLevel === 'C2'"
+                  >{{ result.cefrLevel }}</span>
+                }
+              </div>
+              <p class="result-card__reason">
+                {{ result.reason === 'timeout' ? 'Completed full duration' : 'Ended early' }}
+              </p>
+
+              <div class="result-card__chips">
+                @for (item of [
+                  { label: 'Vocabulary', score: result.lexicalRichness },
+                  { label: 'Task',       score: result.taskFulfillment },
+                  { label: 'Grammar',    score: result.grammar },
+                  { label: 'Coherence',  score: result.coherence }
+                ]; track item.label) {
+                  <div class="chip">
+                    {{ item.label }}
+                    <span
+                      [class.chip-high]="item.score >= 4"
+                      [class.chip-mid]="item.score >= 3 && item.score < 4"
+                      [class.chip-low]="item.score < 3"
+                    >{{ item.score }}/5</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <svg class="result-card__arrow" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
+            </svg>
+
+          </a>
+        }
+      </div>
+    }
+
+  </div>
+</div>

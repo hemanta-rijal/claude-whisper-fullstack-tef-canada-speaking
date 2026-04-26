@@ -1,0 +1,141 @@
+<div class="register-page">
+
+  <!-- ── Left: Brand Panel ─────────────────────────────────────────────── -->
+  <aside class="register-brand">
+    <div class="register-brand__rings">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="register-brand__logo">
+      <div class="logo-inner">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+        </svg>
+      </div>
+      <span class="logo-name">TEF Canada</span>
+    </div>
+
+    <div class="register-brand__body">
+      <h2>Start your journey<br/>to fluency</h2>
+      <p>Create a free account and take your first AI-powered TEF Canada speaking exam in minutes.</p>
+
+      <ol class="register-brand__steps">
+        <li>
+          <span class="step-num">1</span>
+          <div class="step-text">
+            <p>Create your account</p>
+            <p>Takes under 30 seconds</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div class="step-text">
+            <p>Choose Section A or B</p>
+            <p>Phone roleplay or persuasion conversation</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div class="step-text">
+            <p>Get your score instantly</p>
+            <p>Grammar, vocabulary, coherence &amp; task fulfillment</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <p class="register-brand__footer">Powered by OpenAI Whisper &amp; Anthropic Claude</p>
+  </aside>
+
+  <!-- ── Right: Form Panel ─────────────────────────────────────────────── -->
+  <main class="register-panel">
+
+    <div class="register-mobile-logo">
+      <div class="logo-badge-mobile">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+        </svg>
+      </div>
+      <p>TEF Canada</p>
+    </div>
+
+    <div class="register-form-wrap">
+      <div class="register-form-head">
+        <h1>Create your account</h1>
+        <p>Free forever. No credit card required.</p>
+      </div>
+
+      <form class="register-form" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
+
+        <div class="form-field">
+          <label class="form-label">Full name</label>
+          <input
+            class="form-input"
+            type="text"
+            [ngModel]="name()"
+            (ngModelChange)="name.set($event)"
+            name="name"
+            required
+            autocomplete="name"
+            placeholder="Marie Dupont"
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Email address</label>
+          <input
+            class="form-input"
+            type="email"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Password</label>
+          <input
+            class="form-input"
+            type="password"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="Min. 8 characters"
+          />
+        </div>
+
+        @if (error()) {
+          <div class="form-error">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ error() }}
+          </div>
+        }
+
+        <button type="submit" class="btn btn--primary btn--full" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner"></span> Creating account…
+          } @else {
+            Create account
+          }
+        </button>
+
+      </form>
+
+      <div class="form-divider"><span>or</span></div>
+
+      <p class="register-footer-link">
+        Already have an account?
+        <a routerLink="/login">Sign in</a>
+      </p>
+    </div>
+
+  </main>
+</div>

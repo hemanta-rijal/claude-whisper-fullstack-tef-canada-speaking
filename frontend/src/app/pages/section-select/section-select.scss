@@ -1,0 +1,220 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Section Select Page
+// ─────────────────────────────────────────────────────────────────────────────
+
+$accent:     #6366f1;
+$accent-lt:  #818cf8;
+$violet:     #7c3aed;
+$violet-lt:  #a78bfa;
+$bg-base:    #020617;
+$bg-surface: #0f172a;
+$bg-elevated:#1e293b;
+$border:     #1e293b;
+$border-mid: #334155;
+$text:       #f1f5f9;
+$text-sub:   #94a3b8;
+$text-muted: #64748b;
+
+// ── Layout ───────────────────────────────────────────────────────────────────
+
+.section-select {
+  min-height: 100vh;
+  background: $bg-base;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Navbar ───────────────────────────────────────────────────────────────────
+
+.section-select-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid $border;
+
+  @media (min-width: 768px) { padding: 14px 40px; }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: $text-muted;
+    text-decoration: none;
+    transition: color 150ms ease;
+    &:hover { color: $text; }
+  }
+
+  .nav-dot { color: $border-mid; font-size: 12px; }
+
+  h1 { font-size: 14px; font-weight: 600; color: $text; }
+}
+
+// ── Body ─────────────────────────────────────────────────────────────────────
+
+.section-select-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.section-select-inner {
+  width: 100%;
+  max-width: 680px;
+}
+
+.section-select-head {
+  text-align: center;
+  margin-bottom: 40px;
+
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+
+    @media (min-width: 640px) { font-size: 32px; }
+  }
+
+  p { font-size: 14px; color: $text-sub; }
+}
+
+// ── Section cards ─────────────────────────────────────────────────────────────
+
+.section-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 36px;
+
+  @media (min-width: 560px) { grid-template-columns: 1fr 1fr; }
+}
+
+.section-card {
+  position: relative;
+  text-align: left;
+  padding: 24px;
+  border-radius: 20px;
+  border: 2px solid $border-mid;
+  background: $bg-surface;
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  width: 100%;
+
+  &:hover { border-color: $border-mid; background: $bg-elevated; }
+
+  // Selected states
+  &--a-selected {
+    border-color: $accent;
+    background: rgba(99,102,241,0.06);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.08);
+  }
+
+  &--b-selected {
+    border-color: $violet;
+    background: rgba(124,58,237,0.06);
+    box-shadow: 0 0 0 4px rgba(124,58,237,0.08);
+  }
+}
+
+.section-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+
+  &--a {
+    background: rgba(99,102,241,0.12);
+    border-color: rgba(99,102,241,0.25);
+    svg { color: $accent-lt; width: 20px; height: 20px; }
+  }
+
+  &--b {
+    background: rgba(124,58,237,0.12);
+    border-color: rgba(124,58,237,0.25);
+    svg { color: $violet-lt; width: 20px; height: 20px; }
+  }
+}
+
+.section-card__check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+  font-weight: 700;
+
+  &--a { background: $accent; }
+  &--b { background: $violet; }
+}
+
+.section-card__tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+
+  &--a { color: $accent-lt; }
+  &--b { color: $violet-lt; }
+}
+
+.section-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $text;
+  margin-bottom: 10px;
+}
+
+.section-card__desc {
+  font-size: 13px;
+  color: $text-sub;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.section-card__meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: $text-muted;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    svg { width: 14px; height: 14px; }
+  }
+}
+
+// ── Start button area ─────────────────────────────────────────────────────────
+
+.section-select-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-select-hint {
+  font-size: 12px;
+  color: $text-muted;
+}

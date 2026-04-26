@@ -1,0 +1,138 @@
+<div class="exam">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="exam-header">
+    <span class="exam-header__label">TEF Canada — Section {{ section() }}</span>
+
+    <div class="exam-timer" [class.exam-timer--warning]="timeLeft() <= 60">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
+      </svg>
+      <span class="timer-value" [class.timer-value--warning]="timeLeft() <= 60">
+        {{ formattedTime }}
+      </span>
+    </div>
+
+    @if (state() !== 'idle' && state() !== 'evaluating' && state() !== 'done') {
+      <button class="exam-header__end-btn" (click)="endExam('user_terminated')">End Exam</button>
+    } @else {
+      <span class="exam-header__placeholder"></span>
+    }
+  </header>
+
+  <!-- ── Two-column body ─────────────────────────────────────────────────── -->
+  <main class="exam-body">
+
+    <!-- LEFT — scenario image -->
+    <div class="exam-left">
+      @if (scenarioImageUrl()) {
+        <img class="exam-scenario-img" [src]="scenarioImageUrl()" alt="Exam scenario" />
+      } @else {
+        <div class="exam-img-placeholder">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <path d="M3 16l5-5 4 4 3-3 6 6"/>
+          </svg>
+          <span>Loading scenario…</span>
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT — controls + transcript -->
+    <div class="exam-right">
+
+      <!-- State display -->
+      <div class="exam-state">
+
+        <!-- IDLE -->
+        @if (state() === 'idle') {
+          <p class="exam-state__label">Read the scenario, then press start when ready</p>
+          <button class="exam-start-btn" (click)="beginExam()">
+            <svg fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+            </svg>
+            Start Exam
+          </button>
+        }
+
+        <!-- LISTENING -->
+        @if (state() === 'listening') {
+          <div class="exam-mic">
+            <span class="exam-mic__ring exam-mic__ring--outer"></span>
+            <span class="exam-mic__ring exam-mic__ring--inner"></span>
+            <div class="exam-mic__core">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+              </svg>
+            </div>
+          </div>
+          <p class="exam-state__label">Listening — speak naturally, pause when done</p>
+        }
+
+        <!-- AI SPEAKING -->
+        @if (state() === 'ai-speaking') {
+          <div class="exam-waveform">
+            @for (bar of [0.5,0.8,1.0,0.7,0.9,0.6,0.8,0.5]; track $index) {
+              <span
+                class="exam-waveform__bar"
+                [style.height.px]="bar * 40"
+                [style.animation-delay]="($index * 0.1) + 's'"
+              ></span>
+            }
+          </div>
+          <p class="exam-state__label">Examiner is speaking…</p>
+        }
+
+        <!-- PROCESSING -->
+        @if (state() === 'processing') {
+          <div class="exam-thinking">
+            <span></span><span></span><span></span>
+          </div>
+          <p class="exam-state__label">Examiner is responding…</p>
+        }
+
+        <!-- EVALUATING -->
+        @if (state() === 'evaluating') {
+          <span class="spinner spinner--accent spinner--lg"></span>
+          <p class="exam-state__label">Generating your evaluation…</p>
+        }
+
+      </div>
+
+      <!-- Transcript toggle — only shown once conversation has started -->
+      @if (history.length > 0) {
+        <button
+          class="transcript-toggle"
+          [class.transcript-toggle--active]="showTranscript()"
+          (click)="showTranscript.set(!showTranscript())"
+        >
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M8 10h8M8 14h5"/>
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+          </svg>
+          {{ showTranscript() ? 'Hide Transcript' : 'Show Transcript' }}
+        </button>
+      }
+
+      <!-- Transcript — only when toggled on -->
+      @if (showTranscript() && history.length > 0) {
+        <div class="exam-transcript">
+          @for (turn of history; track $index) {
+            <div class="transcript-bubble"
+              [class.transcript-bubble--examiner]="turn.role === 'examiner'"
+              [class.transcript-bubble--candidate]="turn.role === 'candidate'"
+            >
+              {{ turn.content }}
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Error -->
+      @if (error()) {
+        <div class="exam-error">{{ error() }}</div>
+      }
+
+    </div>
+  </main>
+</div>

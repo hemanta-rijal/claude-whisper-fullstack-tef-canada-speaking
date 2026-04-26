@@ -1,0 +1,344 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Design Tokens
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Backgrounds
+$bg-base:     #020617;   // page background
+$bg-surface:  #0f172a;   // cards, panels
+$bg-elevated: #1e293b;   // inputs, chips, hover states
+
+// Borders
+$border:      #1e293b;
+$border-mid:  #334155;
+
+// Text
+$text:        #f1f5f9;
+$text-sub:    #94a3b8;
+$text-muted:  #64748b;
+
+// Accent (indigo)
+$accent:      #6366f1;
+$accent-lt:   #818cf8;
+$accent-dk:   #4f46e5;
+$accent-bg:   rgba(99, 102, 241, 0.1);
+$accent-bdr:  rgba(99, 102, 241, 0.25);
+
+// Status
+$green:       #22c55e;
+$yellow:      #eab308;
+$red:         #ef4444;
+$green-text:  #4ade80;
+$yellow-text: #fbbf24;
+$red-text:    #f87171;
+
+// Radii
+$r-sm:   8px;
+$r-md:   12px;
+$r-lg:   16px;
+$r-xl:   20px;
+$r-2xl:  24px;
+$r-full: 9999px;
+
+// Shadows
+$shadow-sm:     0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.4);
+$shadow-md:     0 4px 12px rgba(0,0,0,0.5);
+$shadow-lg:     0 12px 28px rgba(0,0,0,0.5);
+$shadow-accent: 0 8px 24px rgba(99, 102, 241, 0.25);
+
+// Breakpoints
+$bp-sm:  640px;
+$bp-md:  768px;
+$bp-lg:  1024px;
+$bp-xl:  1280px;
+
+// Transitions
+$t-fast:   150ms ease;
+$t-normal: 200ms ease;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reset + Base
+// ─────────────────────────────────────────────────────────────────────────────
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  height: 100%;
+  background-color: $bg-base;
+  color: $text;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Scrollbar
+// ─────────────────────────────────────────────────────────────────────────────
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: $border-mid; border-radius: $r-full; }
+::-webkit-scrollbar-thumb:hover { background: $text-muted; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Buttons
+// ─────────────────────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: $r-lg;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background $t-fast, color $t-fast, border-color $t-fast,
+              opacity $t-fast, box-shadow $t-fast;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  // Sizes
+  &--sm   { padding: 8px 16px;  font-size: 13px; border-radius: $r-md; }
+  &--lg   { padding: 14px 32px; font-size: 15px; }
+  &--full { width: 100%; }
+
+  // Variants
+  &--primary {
+    background: $accent;
+    color: #fff;
+    box-shadow: $shadow-accent;
+    &:hover { background: $accent-lt; box-shadow: 0 8px 28px rgba(99,102,241,0.35); }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $text-sub;
+    border-color: $border-mid;
+    &:hover { color: $text; background: $bg-elevated; }
+  }
+
+  &--danger {
+    background: rgba(239,68,68,0.08);
+    color: $red-text;
+    border-color: rgba(239,68,68,0.2);
+    &:hover { background: rgba(239,68,68,0.15); }
+  }
+
+  &--icon {
+    padding: 8px;
+    border-radius: $r-md;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Form Elements
+// ─────────────────────────────────────────────────────────────────────────────
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: $text-sub;
+}
+
+.form-input {
+  width: 100%;
+  padding: 13px 16px;
+  background: $bg-elevated;
+  border: 1px solid $border-mid;
+  border-radius: $r-lg;
+  color: $text;
+  font-size: 14px;
+  transition: border-color $t-fast, box-shadow $t-fast;
+
+  &::placeholder { color: $text-muted; }
+
+  &:focus {
+    outline: none;
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+}
+
+.form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: $r-lg;
+  color: $red-text;
+  font-size: 13px;
+
+  svg { flex-shrink: 0; margin-top: 1px; }
+}
+
+.form-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
+
+  span {
+    font-size: 12px;
+    color: $text-muted;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cards
+// ─────────────────────────────────────────────────────────────────────────────
+
+.card {
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: $r-2xl;
+  box-shadow: $shadow-sm;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Logo Badge (shared across pages)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: $r-md;
+  background: $accent-bg;
+  border: 1px solid $accent-bdr;
+
+  svg { color: $accent-lt; }
+
+  &--lg {
+    width: 52px;
+    height: 52px;
+    border-radius: $r-lg;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Score colours (used in dashboard + results)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.score-high { color: $green-text; }
+.score-mid  { color: $yellow-text; }
+.score-low  { color: $red-text; }
+
+.score-bar-track {
+  height: 8px;
+  background: $bg-elevated;
+  border-radius: $r-full;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: $r-full;
+  transition: width 0.7s ease;
+
+  &--high   { background: $green; }
+  &--mid    { background: $yellow; }
+  &--low    { background: $red; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Spinner
+// ─────────────────────────────────────────────────────────────────────────────
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: #fff;
+  border-radius: $r-full;
+  animation: spin 0.65s linear infinite;
+
+  &--accent {
+    border-color: $border;
+    border-top-color: $accent;
+    width: 36px;
+    height: 36px;
+    border-width: 3px;
+  }
+
+  &--lg {
+    width: 44px;
+    height: 44px;
+    border-width: 4px;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Animations
+// ─────────────────────────────────────────────────────────────────────────────
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ping {
+  0%      { transform: scale(1); opacity: 0.6; }
+  75%,100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes wave {
+  from { transform: scaleY(0.3); opacity: 0.5; }
+  to   { transform: scaleY(1);   opacity: 1;   }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

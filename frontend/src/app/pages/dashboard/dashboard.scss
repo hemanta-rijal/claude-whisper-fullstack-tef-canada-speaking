@@ -1,0 +1,304 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Dashboard Page
+// ─────────────────────────────────────────────────────────────────────────────
+
+$accent:     #6366f1;
+$accent-lt:  #818cf8;
+$bg-base:    #020617;
+$bg-surface: #0f172a;
+$bg-elevated:#1e293b;
+$border:     #1e293b;
+$border-mid: #334155;
+$text:       #f1f5f9;
+$text-sub:   #94a3b8;
+$text-muted: #64748b;
+$green-text: #4ade80;
+$yellow-text:#fbbf24;
+$red-text:   #f87171;
+
+// ── Layout ───────────────────────────────────────────────────────────────────
+
+.dashboard {
+  min-height: 100vh;
+  background: $bg-base;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Navbar ───────────────────────────────────────────────────────────────────
+
+.dashboard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid $border;
+  background: $bg-base;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @media (min-width: 768px) { padding: 14px 40px; }
+}
+
+.dashboard-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    svg { color: $accent-lt; width: 17px; height: 17px; }
+  }
+
+  .brand-text {
+    p:first-child {
+      font-size: 14px;
+      font-weight: 700;
+      color: $text;
+      line-height: 1.1;
+    }
+    p:last-child {
+      font-size: 11px;
+      color: $text-muted;
+      line-height: 1.1;
+    }
+  }
+}
+
+.dashboard-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dashboard-nav__user {
+  font-size: 13px;
+  color: $text-sub;
+  display: none;
+
+  @media (min-width: 640px) { display: block; }
+}
+
+.dashboard-nav__signout {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: $text-muted;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 150ms ease, background 150ms ease;
+
+  &:hover { color: $text; background: $bg-elevated; }
+}
+
+// ── Main content ─────────────────────────────────────────────────────────────
+
+.dashboard-content {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+
+  @media (min-width: 768px) { padding: 48px 40px; }
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  p { font-size: 13px; color: $text-muted; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 24px;
+  border: 1px dashed $border-mid;
+  border-radius: 20px;
+
+  .empty-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: $bg-elevated;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    svg { color: $text-muted; width: 28px; height: 28px; }
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: $text;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 13px;
+    color: $text-muted;
+    line-height: 1.6;
+    max-width: 280px;
+    margin-bottom: 28px;
+  }
+}
+
+// ── Result cards ─────────────────────────────────────────────────────────────
+
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    border-color: rgba(99,102,241,0.35);
+    background: rgba(99,102,241,0.04);
+
+    .result-card__arrow { color: $accent-lt; }
+  }
+}
+
+.result-card__score {
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  border: 1.5px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &--high { background: rgba(34,197,94,0.08);  border-color: rgba(34,197,94,0.25);  }
+  &--mid  { background: rgba(234,179,8,0.08);  border-color: rgba(234,179,8,0.25);  }
+  &--low  { background: rgba(239,68,68,0.08);  border-color: rgba(239,68,68,0.25);  }
+
+  .score-num {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+
+    &--high { color: $green-text; }
+    &--mid  { color: $yellow-text; }
+    &--low  { color: $red-text; }
+  }
+
+  .score-denom { font-size: 11px; color: $text-muted; margin-top: 1px; }
+}
+
+.result-card__body { flex: 1; min-width: 0; }
+
+.result-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text;
+  }
+
+  .dot { color: $border-mid; }
+
+  .date-label { font-size: 12px; color: $text-muted; }
+}
+
+.result-card__reason {
+  font-size: 12px;
+  color: $text-muted;
+  margin-bottom: 12px;
+}
+
+.result-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 4px 10px;
+  background: $bg-elevated;
+  border-radius: 6px;
+  font-size: 12px;
+  color: $text-muted;
+
+  span {
+    font-weight: 600;
+    margin-left: 4px;
+    &.chip-high   { color: $green-text; }
+    &.chip-mid    { color: $yellow-text; }
+    &.chip-low    { color: $red-text; }
+  }
+}
+
+// CEFR inline chip shown in result card meta row
+.cefr-chip {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 6px;
+
+  &--a { color: #f59e0b; background: rgba(245,158,11,0.12); }
+  &--b { color: #818cf8; background: rgba(99,102,241,0.12); }
+  &--c { color: #34d399; background: rgba(52,211,153,0.12); }
+}
+
+.result-card__arrow {
+  flex-shrink: 0;
+  color: $border-mid;
+  transition: color 150ms ease;
+  margin-top: 4px;
+}

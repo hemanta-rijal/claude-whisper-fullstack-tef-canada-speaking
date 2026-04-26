@@ -1,0 +1,376 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Exam Page — full-screen voice UI
+// ─────────────────────────────────────────────────────────────────────────────
+
+$accent:     #6366f1;
+$accent-lt:  #818cf8;
+$bg-base:    #020617;
+$bg-surface: #0f172a;
+$bg-elevated:#1e293b;
+$border:     #1e293b;
+$border-mid: #334155;
+$text:       #f1f5f9;
+$text-sub:   #94a3b8;
+$text-muted: #64748b;
+$red:        #ef4444;
+
+// ── Shell ─────────────────────────────────────────────────────────────────────
+
+.exam {
+  min-height: 100vh;
+  background: $bg-base;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.exam-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid $border;
+
+  @media (min-width: 768px) { padding: 14px 40px; }
+}
+
+.exam-header__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.exam-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg { width: 16px; height: 16px; }
+
+  .timer-value {
+    font-size: 20px;
+    font-family: ui-monospace, 'SF Mono', monospace;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $text;
+    transition: color 300ms ease;
+
+    &--warning { color: #f87171; }
+  }
+
+  svg { color: $text-muted; transition: color 300ms ease; }
+  &.exam-timer--warning svg { color: #f87171; }
+}
+
+.exam-header__end-btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: $text-muted;
+  background: $bg-elevated;
+  border: 1px solid $border-mid;
+  border-radius: 10px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+
+  &:hover {
+    color: #fca5a5;
+    background: rgba(239,68,68,0.08);
+    border-color: rgba(239,68,68,0.2);
+  }
+}
+
+.exam-header__placeholder { width: 80px; } // keeps timer centred
+
+// ── Two-column body ───────────────────────────────────────────────────────────
+
+.exam-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+
+  // Stack vertically on mobile
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// LEFT — scenario image panel
+.exam-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px 48px 40px;
+  border-right: 1px solid $border;
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+    border-right: none;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.exam-scenario-img {
+  width: 100%;
+  max-width: 460px;
+  border-radius: 16px;
+  border: 1px solid $border;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+// Placeholder shown while image URL is loading
+.exam-img-placeholder {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  border: 1px dashed $border-mid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: $text-muted;
+  font-size: 13px;
+
+  svg { width: 40px; height: 40px; opacity: 0.4; }
+}
+
+// RIGHT — controls panel
+.exam-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 48px 40px 48px 32px;
+
+  @media (max-width: 768px) {
+    padding: 32px 20px;
+  }
+}
+
+// ── State displays ────────────────────────────────────────────────────────────
+
+.exam-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.exam-state__label {
+  font-size: 14px;
+  color: $text-sub;
+}
+
+// Idle: start button
+.exam-start-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 40px;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(99,102,241,0.3);
+  transition: background 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+
+  &:hover {
+    background: $accent-lt;
+    box-shadow: 0 10px 32px rgba(99,102,241,0.4);
+  }
+
+  &:active { transform: scale(0.98); }
+
+  svg { width: 22px; height: 22px; }
+}
+
+// Listening: pulsing mic rings
+.exam-mic {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exam-mic__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid $accent;
+  animation: ping 1.5s ease-out infinite;
+  opacity: 0;
+
+  &--outer { width: 112px; height: 112px; animation-delay: 0s; }
+  &--inner { width: 80px;  height: 80px;  animation-delay: 0.4s; }
+}
+
+.exam-mic__core {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  background: $accent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(99,102,241,0.5);
+
+  svg { color: #fff; width: 26px; height: 26px; }
+}
+
+// AI speaking: waveform bars
+.exam-waveform {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 48px;
+}
+
+.exam-waveform__bar {
+  width: 5px;
+  background: $accent-lt;
+  border-radius: 9999px;
+  animation: wave 0.8s ease-in-out infinite alternate;
+}
+
+// ── Transcript toggle button ──────────────────────────────────────────────────
+
+.transcript-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: $bg-elevated;
+  border: 1px solid $border-mid;
+  border-radius: 20px;
+  color: $text-sub;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+
+  svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  &:hover {
+    color: $text;
+    background: $bg-surface;
+    border-color: $accent;
+  }
+
+  // When transcript is visible, highlight the toggle
+  &--active {
+    color: $accent-lt;
+    border-color: rgba(99,102,241,0.4);
+    background: rgba(99,102,241,0.08);
+  }
+}
+
+// ── Conversation transcript ───────────────────────────────────────────────────
+
+.exam-transcript {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px;
+  animation: fade-in 200ms ease;
+}
+
+.transcript-bubble {
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fade-in 200ms ease;
+
+  &--examiner {
+    align-self: flex-start;
+    background: $bg-surface;
+    border: 1px solid $border;
+    color: $text-sub;
+    border-bottom-left-radius: 4px;
+  }
+
+  &--candidate {
+    align-self: flex-end;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #c7d2fe;
+    border-bottom-right-radius: 4px;
+  }
+}
+
+// ── Error ─────────────────────────────────────────────────────────────────────
+
+.exam-error {
+  padding: 12px 16px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 12px;
+  color: #fca5a5;
+  font-size: 13px;
+  max-width: 380px;
+  text-align: center;
+}
+
+// ── Thinking dots (processing state) ─────────────────────────────────────────
+// Three bouncing dots — feels like a chat app, not a loading spinner.
+// Shows while Whisper + Claude + TTS are running.
+
+.exam-thinking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+
+  span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: $accent;
+    animation: thinking-dot 1.2s ease-in-out infinite;
+
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Animations
+// ─────────────────────────────────────────────────────────────────────────────
+
+@keyframes ping {
+  0%       { transform: scale(0.8); opacity: 0.7; }
+  80%, 100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes wave {
+  from { transform: scaleY(0.3); opacity: 0.5; }
+  to   { transform: scaleY(1);   opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes thinking-dot {
+  0%, 60%, 100% { transform: translateY(0);    opacity: 0.35; }
+  30%           { transform: translateY(-10px); opacity: 1; }
+}

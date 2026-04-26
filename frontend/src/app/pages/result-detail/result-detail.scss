@@ -1,0 +1,228 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Result Detail Page
+// ─────────────────────────────────────────────────────────────────────────────
+
+$accent:     #6366f1;
+$accent-lt:  #818cf8;
+$bg-base:    #020617;
+$bg-surface: #0f172a;
+$bg-elevated:#1e293b;
+$border:     #1e293b;
+$border-mid: #334155;
+$text:       #f1f5f9;
+$text-sub:   #94a3b8;
+$text-muted: #64748b;
+$green:      #22c55e;
+$green-text: #4ade80;
+$yellow:     #eab308;
+$yellow-text:#fbbf24;
+$red:        #ef4444;
+$red-text:   #f87171;
+
+// ── Layout ───────────────────────────────────────────────────────────────────
+
+.result-detail {
+  min-height: 100vh;
+  background: $bg-base;
+  padding: 40px 24px 64px;
+
+  @media (min-width: 768px) { padding: 56px 32px 80px; }
+}
+
+.result-detail__inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+// ── Back link ─────────────────────────────────────────────────────────────────
+
+.result-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $text-muted;
+  margin-bottom: 32px;
+  text-decoration: none;
+  transition: color 150ms ease;
+
+  svg { width: 16px; height: 16px; }
+  &:hover { color: $text; }
+}
+
+// ── Loading / Error ───────────────────────────────────────────────────────────
+
+.result-loading {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.result-error-msg {
+  padding: 16px 20px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 14px;
+  color: $red-text;
+  font-size: 14px;
+  text-align: center;
+}
+
+// ── CEFR badge ────────────────────────────────────────────────────────────────
+
+.cefr-badge {
+  display: inline-block;
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  border-radius: 20px;
+  padding: 12px 32px;
+  margin-bottom: 12px;
+
+  // A levels — amber
+  &--a { color: #f59e0b; background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.3); }
+  // B levels — indigo
+  &--b { color: #818cf8; background: rgba(99,102,241,0.1); border: 2px solid rgba(99,102,241,0.3); }
+  // C levels — emerald
+  &--c { color: #34d399; background: rgba(52,211,153,0.1); border: 2px solid rgba(52,211,153,0.3); }
+}
+
+.cefr-label {
+  font-size: 14px;
+  color: $text-sub;
+  margin-bottom: 24px;
+}
+
+// ── Score hero ────────────────────────────────────────────────────────────────
+
+.result-hero {
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: 24px;
+  padding: 36px 24px;
+  text-align: center;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.result-hero__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 20px;
+}
+
+// Score ring
+.result-hero__ring {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 4px solid;
+  margin-bottom: 20px;
+
+  &--high { border-color: $green;  }
+  &--mid  { border-color: $yellow; }
+  &--low  { border-color: $red;    }
+
+  .ring-score {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+
+    &--high { color: $green-text; }
+    &--mid  { color: $yellow-text; }
+    &--low  { color: $red-text; }
+  }
+
+  .ring-denom { font-size: 14px; color: $text-muted; margin-top: 2px; }
+}
+
+.result-hero__meta {
+  font-size: 13px;
+  color: $text-muted;
+
+  .meta-sep { margin: 0 8px; }
+}
+
+// ── Section card ─────────────────────────────────────────────────────────────
+
+.result-section {
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 12px;
+}
+
+.result-section__title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 18px;
+}
+
+// ── Score breakdown bars ──────────────────────────────────────────────────────
+
+.score-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.score-row__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .score-row__name { font-size: 14px; font-weight: 500; color: $text-sub; }
+
+  .score-row__val {
+    font-size: 13px;
+    font-weight: 700;
+
+    &--high { color: $green-text; }
+    &--mid  { color: $yellow-text; }
+    &--low  { color: $red-text; }
+  }
+}
+
+.score-bar-track {
+  height: 8px;
+  background: $bg-elevated;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.7s ease;
+
+  &--high { background: $green;  }
+  &--mid  { background: $yellow; }
+  &--low  { background: $red;    }
+}
+
+// ── Text sections (feedback, suggestions) ────────────────────────────────────
+
+.result-text {
+  font-size: 14px;
+  color: $text-sub;
+  line-height: 1.75;
+}
+
+// ── CTA ──────────────────────────────────────────────────────────────────────
+
+.result-cta {
+  text-align: center;
+  margin-top: 32px;
+}
