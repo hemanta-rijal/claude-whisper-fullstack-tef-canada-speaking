@@ -140,8 +140,8 @@ jobs:
           envs: IMAGE
           script: |
             docker pull "$IMAGE"
-            docker stop backend || true
-            docker rm backend || true
+
+            # Resolve the env file (contains DATABASE_URL and other secrets)
             ENV_FILE_ARG=""
             for path in "$HOME/tef_backend/.env" /etc/tef_backend/.env; do
               if [ -f "$path" ]; then
@@ -149,6 +149,14 @@ jobs:
                 break
               fi
             done
+
+            # Run Prisma migrations against the production database BEFORE starting the app.
+            # Creates or updates tables — safe to run on every deploy, never destroys data.
+            docker run --rm --network host $ENV_FILE_ARG "$IMAGE" npx prisma migrate deploy
+
+            # Start (or restart) the main application container
+            docker stop backend || true
+            docker rm backend || true
             docker run -d --name backend --restart unless-stopped \
               --network host \
               $ENV_FILE_ARG "$IMAGE"
