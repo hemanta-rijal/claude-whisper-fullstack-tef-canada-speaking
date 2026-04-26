@@ -124,4 +124,4 @@ jobs:
             docker pull "$IMAGE"
             docker stop frontend || true
             docker rm frontend || true
-            docker run -d --name frontend --restart unless-stopped -p 80:80 "$IMAGE"
+            docker run -d --name frontend --restart unless-stopped -p 8080:80 "$IMAGE"

@@ -143,7 +143,10 @@ jobs:
             docker stop backend || true
             docker rm backend || true
             ENV_FILE_ARG=""
-            if [ -f /etc/tef_backend/.env ]; then
-              ENV_FILE_ARG="--env-file /etc/tef_backend/.env"
-            fi
+            for path in "$HOME/tef_backend/.env" /etc/tef_backend/.env; do
+              if [ -f "$path" ]; then
+                ENV_FILE_ARG="--env-file $path"
+                break
+              fi
+            done
             docker run -d --name backend --restart unless-stopped -p 3000:3000 $ENV_FILE_ARG "$IMAGE"
