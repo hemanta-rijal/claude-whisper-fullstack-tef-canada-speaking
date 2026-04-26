@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express';
 import { authService } from '../services/auth.service.js';
 import { userRepository } from '../repositories/user.repository.js';
+import { sessionRepository } from '../repositories/session.repository.js';
+import type { RegisterInput, LoginInput } from '../services/auth.service.js';
+import { error } from 'node:console';
 
 const SESSION_COOKIE = 'sid';
 
@@ -14,11 +17,16 @@ const COOKIE_OPTIONS = {
 
 export async function loginController(req: Request, res: Response): Promise<void> {
   // TODO: add Zod validation here to give proper 400 errors for missing/invalid fields.
-  const { email, password } = req.body as { email?: string; password?: string };
+  //const { email, password } = req.body as { email?: string; password?: string };
+  const { email, password } = (req.body ?? {}) as LoginInput;
 
-  const result = await authService.loginWithPassword({ email, password });
-  res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
-  res.status(200).json({ ok: true, userId: result.userId });
+  try {
+    const result = await authService.loginWithPassword({ email, password });
+    res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
+    res.status(200).json({ ok: true, userId: result.userId });
+  } catch {
+    res.status(401).json({ error: 'Invalid email or password' });
+  }
 }
 
 // GET /auth/me — protected route (requires valid session cookie)
@@ -34,12 +42,22 @@ export async function meController(req: Request, res: Response): Promise<void> {
 }
 
 export async function logoutController(req: Request, res: Response): Promise<void> {
-  // Express-specific: cookies are in `req.cookies` but only after `cookie-parser` middleware is added.
-  // TODO: install + register `cookie-parser` in server.ts, then read `req.cookies[SESSION_COOKIE]`.
-  // TODO: call sessionRepository.revokeById(sessionId) to invalidate the DB session row.
-
-  // Clear the cookie: must use same name + path so browser actually removes it.
+  const sessionId = req.cookies[SESSION_COOKIE] as string | undefined;
+  if(sessionId){
+    await sessionRepository.revokeById(sessionId);
+  }
   res.clearCookie(SESSION_COOKIE, { path: '/' });
   res.status(200).json({ ok: true });
+}
+
+export async function registerController(req: Request, res: Response): Promise<void>{
+  const { email, name, password } = (req.body ?? {}) as RegisterInput;
+  try {
+    const result = await authService.registerWithPassword({ email, name, password })
+    res.cookie(SESSION_COOKIE, result.sessionId,COOKIE_OPTIONS);
+    res.status(201).json({ok: true, userId: result.userId});
+  } catch {
+    res.status(409).json({ error: 'Email already in use' });
+  }
 }
 

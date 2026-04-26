@@ -23,5 +23,11 @@ export const sessionRepository = {
       select: { userId: true },
     });
   },
-};
 
+  async revokeById(sessionId: string): Promise<void> {
+    await prisma.session.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() },  // Prisma -> SQL-ish: UPDATE Session SET revokedAt=NOW() WHERE id=?
+    });
+  },
+};

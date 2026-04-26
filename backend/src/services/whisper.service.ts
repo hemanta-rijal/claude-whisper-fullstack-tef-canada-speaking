@@ -1,0 +1,52 @@
+import fs from 'fs';
+import OpenAI from 'openai';
+import { getEnv } from '../lib/env.js';
+
+// Initialise the OpenAI client once — reused across all requests.
+// LEARN: this is the singleton pattern — one shared instance instead of creating a new one per request.
+const openai = new OpenAI({ apiKey: getEnv().openAiApiKey });
+
+/**
+ * Transcribes an audio file to French text using OpenAI Whisper.
+ *
+ * @param filePath - absolute path to the audio file saved by multer
+ * @param scenarioHint - a short French phrase describing the call context.
+ *   Whisper uses this as a vocabulary/context primer — it dramatically improves
+ *   accuracy for domain-specific words (club names, services, French phone phrases).
+ * @returns the French transcript, or null if the audio was silent/empty
+ */
+export async function transcribeAudio(filePath: string, scenarioHint?: string): Promise<string | null> {
+  try {
+    // Guard 1: skip the API call entirely if the file is too small to contain real speech.
+    // A webm container with 1–2 seconds of actual speech is at least 8–10KB.
+    // Anything under 4KB is almost certainly silence or a fraction-of-a-second noise burst.
+    // Sending silence to Whisper is what causes it to hallucinate English phrases.
+    const { size } = fs.statSync(filePath);
+    if (size < 4096) return null;
+
+    const response = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(filePath),
+      model: 'whisper-1',
+      language: 'fr',
+      response_format: 'text',
+      // LEARN: the prompt parameter primes Whisper with vocabulary and context.
+      // It doesn't constrain the output — it just biases Whisper toward words
+      // that are likely to appear. This is the single biggest accuracy improvement
+      // for domain-specific transcription.
+      prompt: scenarioHint
+        ?? "Conversation téléphonique en français. L'appelant pose des questions à un interlocuteur professionnel.",
+    });
+
+    const transcript = (response as unknown as string).trim();
+
+    // Whisper sometimes returns empty string, just punctuation, or filler like "..." 
+    // for near-silent audio. Treat anything under 3 meaningful characters as empty
+    // so we don't send noise to Claude.
+    const meaningful = transcript.replace(/[.,!?…\s]/g, '');
+    if (meaningful.length < 3) return null;
+
+    return transcript;
+  } finally {
+    fs.unlink(filePath, () => {});
+  }
+}

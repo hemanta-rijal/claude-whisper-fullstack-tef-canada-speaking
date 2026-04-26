@@ -12,7 +12,8 @@ export type AppEnv = {
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   databaseUrl: string;
-  exampleApiKey?: string;
+  openAiApiKey: string;
+  anthropicApiKey: string;
 };
 
 export function loadLocalEnv(): void {
@@ -47,11 +48,20 @@ function parseDatabaseUrl(raw: string | undefined): string {
   return raw;
 }
 
+function requireEnv(key: string): string {
+  const val = process.env[key];
+  if (!val || val.trim() === '' || val === `your-${key.toLowerCase().replace(/_/g, '-')}-here`) {
+    throw new Error(`Missing or placeholder value for ${key} in .env`);
+  }
+  return val;
+}
+
 export function getEnv(): AppEnv {
   return {
     nodeEnv: parseNodeEnv(process.env.NODE_ENV),
     port: parsePort(process.env.PORT, 3000),
     databaseUrl: parseDatabaseUrl(process.env.DATABASE_URL),
-    exampleApiKey: process.env.EXAMPLE_API_KEY,
+    openAiApiKey: requireEnv('OPENAI_API_KEY'),
+    anthropicApiKey: requireEnv('ANTHROPIC_API_KEY'),
   };
 }

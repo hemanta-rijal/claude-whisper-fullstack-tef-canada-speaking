@@ -24,7 +24,8 @@ model User {
   @@index([oauthProviderAccountId])
 
   // One user can have many active sessions (one per device/browser).
-  sessions Session[]
+  sessions    Session[]
+  testResults TestResult[]
 }
 
 model Session {
@@ -42,6 +43,41 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model TestResult {
+  id    String @id @default(cuid())
+  userId String
+  // Prisma relation: deleting a User cascades to their TestResults
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Which sections the user took: "A", "B", or "A+B"
+  sections String
+
+  // Overall score and per-section breakdown (null if section not taken)
+  overallScore  Float   // e.g. 3.5 out of 5
+  sectionAScore Float?
+  sectionBScore Float?
+
+  // TEF Canada rubric — each scored 0.0–5.0
+  lexicalRichness Float  // vocabulary range and accuracy
+  taskFulfillment Float  // completed the task / made their case
+  grammar         Float  // grammatical correctness
+  coherence       Float  // logical flow and organisation
+
+  // CEFR level assessed by Claude (A1 → C2). Nullable for results created before this field existed.
+  cefrLevel   String?
+
+  // Claude evaluator's written output
+  feedback    String @db.Text  // overall narrative feedback
+  suggestions String @db.Text  // specific improvement tips
+
+  // How the exam ended
+  reason String  // 'timeout' | 'user_terminated'
+
+  completedAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 enum AuthProvider {

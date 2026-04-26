@@ -1,13 +1,19 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AttemptService } from '../../services/attempt';
+import { environment } from '../../../environments/environment';
 
 type ExamState = 'idle' | 'listening' | 'processing' | 'ai-speaking' | 'evaluating' | 'done';
 type Turn = { role: 'examiner' | 'candidate'; content: string };
 
 const EXAM_DURATION_SECONDS = 5 * 60; // 5 minutes
-const SILENCE_THRESHOLD = 10;         // audio level below this = silence (0-255 scale)
-const SILENCE_DURATION_MS = 1800;     // 1.8s of silence triggers submission
+const SILENCE_THRESHOLD = 15;         // audio level below this = silence (0-255 scale)
+const SILENCE_DURATION_MS = 1200;     // 1.2s of silence triggers submission
+// Minimum consecutive frames above threshold to count as real speech.
+// Interval fires every 100ms, so 5 frames = 500ms of sustained sound.
+// This prevents a cough, breath, or background noise from triggering a submission
+// with nearly silent audio — which makes Whisper hallucinate English text.
+const MIN_SPEECH_FRAMES = 5;
 
 @Component({
   selector: 'app-exam',
@@ -49,6 +55,14 @@ export class Exam implements OnInit, OnDestroy {
   // submitTurn() would resume after endExam() has already run and restart the loop.
   private examEnded = false;
 
+  // ── Audio queue ────────────────────────────────────────────────────────────
+  // With streaming we receive multiple audio chunks (one per sentence).
+  // We push them into a queue and play them sequentially so they flow smoothly.
+  // drainResolve is called when the queue empties — used by waitForAudioDone().
+  private audioQueue: string[] = [];
+  private isDraining = false;
+  private drainResolve: (() => void) | null = null;
+
   ngOnInit() {
     // Read the section chosen on the previous page — passed via router state
     const nav = window.history.state as { section?: 'A' | 'B' };
@@ -67,7 +81,7 @@ export class Exam implements OnInit, OnDestroy {
     try {
       const preview = await this.attemptService.getScenarioPreview(section);
       this.scenarioId.set(preview.scenarioId);
-      this.scenarioImageUrl.set(`http://localhost:3000${preview.scenarioImageUrl}`);
+      this.scenarioImageUrl.set(`${environment.apiUrl}${preview.scenarioImageUrl}`);
     } catch {
       // Non-fatal — the image just won't show until the exam starts
     }
@@ -88,7 +102,7 @@ export class Exam implements OnInit, OnDestroy {
       const result = await this.attemptService.startAttempt(this.section(), this.scenarioId());
       this.attemptId.set(result.attemptId);
       this.scenarioId.set(result.scenarioId);
-      this.scenarioImageUrl.set(`http://localhost:3000${result.scenarioImageUrl}`);
+      this.scenarioImageUrl.set(`${environment.apiUrl}${result.scenarioImageUrl}`);
 
       // Store opening as first examiner turn
       this.history.push({ role: 'examiner', content: result.openingText });
@@ -128,7 +142,8 @@ export class Exam implements OnInit, OnDestroy {
 
     // Monitor audio levels — detect silence
     const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-    let speakingStarted = false;
+    let speechFrameCount = 0;   // consecutive frames above threshold
+    let speechConfirmed = false; // true once MIN_SPEECH_FRAMES sustained frames are seen
 
     this.silenceCheckInterval = setInterval(() => {
       if (!this.analyser) return;
@@ -136,65 +151,216 @@ export class Exam implements OnInit, OnDestroy {
       const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
 
       if (avg > SILENCE_THRESHOLD) {
-        // User is speaking — clear any pending silence timer
-        speakingStarted = true;
+        // Sound detected — increment the consecutive frame counter.
+        speechFrameCount++;
+
+        // Clear any pending silence timer (user resumed speaking).
         if (this.silenceTimer) {
           clearTimeout(this.silenceTimer);
           this.silenceTimer = null;
         }
-      } else if (speakingStarted && !this.silenceTimer) {
-        // Silence detected after speech — start countdown to submit
-        this.silenceTimer = setTimeout(() => {
-          this.submitTurn();
-        }, SILENCE_DURATION_MS);
+
+        // Only confirm speech once we've seen enough consecutive frames.
+        // A single noisy frame (breath, chair, background bump) won't pass this.
+        if (speechFrameCount >= MIN_SPEECH_FRAMES) {
+          speechConfirmed = true;
+        }
+
+      } else {
+        // Silence frame — reset the consecutive counter so transient noise
+        // doesn't accumulate across gaps.
+        speechFrameCount = 0;
+
+        // Only start the submission timer if real speech was confirmed.
+        // If the user hasn't spoken (or only made brief noise), we just wait.
+        if (speechConfirmed && !this.silenceTimer) {
+          this.silenceTimer = setTimeout(() => {
+            this.submitTurn();
+          }, SILENCE_DURATION_MS);
+        }
       }
     }, 100);
   }
 
-  // ─── Step 3: Submit candidate audio, get examiner response ───────────────
+  // ─── Step 3: Submit candidate audio, get examiner response via SSE stream ──
 
   private async submitTurn() {
     this.stopListening();
     this.state.set('processing');
 
     const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+    const form = new FormData();
+    form.append('audio', audioBlob, 'turn.webm');
+    form.append('history', JSON.stringify(this.history));
+    form.append('section', this.section());
+    form.append('scenarioId', this.scenarioId());
 
+    // We use native fetch() here instead of Angular's HttpClient because HttpClient
+    // doesn't expose the raw ReadableStream we need to read SSE chunks one by one.
+    // `credentials: 'include'` sends the session cookie — same as HttpClient withCredentials.
+    let response: Response;
     try {
-      const result = await this.attemptService.submitTurn(
-        this.attemptId(),
-        audioBlob,
-        this.history,
-        this.section(),
-        this.scenarioId(),
+      response = await fetch(
+        `${environment.apiUrl}/attempts/${this.attemptId()}/turn-stream`,
+        { method: 'POST', credentials: 'include', body: form },
       );
-
-      if (this.examEnded) return;
-
-      // Whisper returned empty audio (silence or noise) — skip this turn entirely.
-      // Don't add anything to history, don't call Claude, just listen again.
-      if (result.skipped) {
-        await this.startListening();
-        return;
-      }
-
-      // Store both turns in history
-      this.history.push({ role: 'candidate', content: result.transcript });
-      this.history.push({ role: 'examiner', content: result.examinerText });
-
-      // Play examiner response, then listen again
-      this.state.set('ai-speaking');
-      await this.playBase64Audio(result.examinerAudio);
-
-      // Check again after audio playback — endExam() could have been called
-      // while the audio was playing (e.g. timer hit zero mid-sentence).
-      if (this.examEnded) return;
-
-      await this.startListening();
     } catch {
       if (this.examEnded) return;
       this.error.set('Connection error. Trying to continue...');
       await this.startListening();
+      return;
     }
+
+    if (!response.ok || !response.body) {
+      if (this.examEnded) return;
+      await this.startListening();
+      return;
+    }
+
+    // ReadableStream reader — each .read() call gives us the next available bytes.
+    // TextDecoder turns those bytes into a string we can parse for SSE events.
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let sseBuffer = '';       // accumulates raw SSE text across multiple reads
+    let examinerText = '';    // collects all sentence texts for the history push at 'done'
+    let skipped = false;
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Bail out if the exam ended (timer or user button) during an in-flight stream.
+        if (this.examEnded) {
+          await reader.cancel();
+          return;
+        }
+
+        // Append the new bytes to our running buffer and parse any complete events.
+        sseBuffer += decoder.decode(value, { stream: true });
+        const { events, remainder } = this.parseSSEBuffer(sseBuffer);
+        sseBuffer = remainder;  // keep incomplete event data for the next read()
+
+        for (const event of events) {
+          if (this.examEnded) return;
+
+          if (event.type === 'skipped') {
+            skipped = true;
+
+          } else if (event.type === 'transcript') {
+            // Candidate's speech is confirmed — add it to history immediately
+            this.history.push({ role: 'candidate', content: event.data['text'] as string });
+
+          } else if (event.type === 'audio') {
+            // One sentence of audio arrived — queue it for playback.
+            // The user hears this sentence while Claude is still generating the next one.
+            this.state.set('ai-speaking');
+            examinerText += (examinerText ? ' ' : '') + (event.data['sentenceText'] as string);
+            this.queueAudio(event.data['base64'] as string);
+
+          } else if (event.type === 'done') {
+            // All sentences received — commit the full examiner turn to history.
+            // It must be ONE history entry (not one per sentence) for Claude's context.
+            if (examinerText) {
+              this.history.push({ role: 'examiner', content: examinerText });
+            }
+          }
+        }
+      }
+    } catch {
+      // Stream was cancelled or network dropped — safe to ignore if exam ended
+    }
+
+    if (this.examEnded) return;
+
+    if (skipped) {
+      // Whisper returned nothing — restart listening without touching history
+      await this.startListening();
+      return;
+    }
+
+    // Wait for all queued audio to finish playing before we start the mic again.
+    // This prevents the mic picking up the examiner's own TTS audio.
+    await this.waitForAudioDone();
+    if (this.examEnded) return;
+
+    await this.startListening();
+  }
+
+  // ── SSE parsing ─────────────────────────────────────────────────────────────
+  // SSE format: "event: name\ndata: json\n\n"
+  // A single read() may contain partial events or multiple complete events.
+  // We extract all complete event blocks and return the leftover bytes as remainder.
+  private parseSSEBuffer(buffer: string): {
+    events: Array<{ type: string; data: Record<string, unknown> }>;
+    remainder: string;
+  } {
+    const events: Array<{ type: string; data: Record<string, unknown> }> = [];
+    const lines = buffer.split('\n');
+    let currentEvent = '';
+    let currentData = '';
+    let lastProcessedIndex = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.startsWith('event: ')) {
+        currentEvent = line.slice(7).trim();
+      } else if (line.startsWith('data: ')) {
+        currentData = line.slice(6).trim();
+      } else if (line === '' && currentEvent) {
+        // Empty line = end of one SSE event block
+        try {
+          events.push({ type: currentEvent, data: JSON.parse(currentData) as Record<string, unknown> });
+        } catch {
+          events.push({ type: currentEvent, data: {} });
+        }
+        currentEvent = '';
+        currentData = '';
+        lastProcessedIndex = i + 1;
+      }
+    }
+
+    // Anything after the last fully-processed event is an incomplete block — keep it
+    return { events, remainder: lines.slice(lastProcessedIndex).join('\n') };
+  }
+
+  // ── Audio queue ─────────────────────────────────────────────────────────────
+
+  // Push a base64 audio chunk onto the queue. If nothing is currently playing, start draining.
+  private queueAudio(base64: string): void {
+    this.audioQueue.push(base64);
+    if (!this.isDraining) {
+      this.isDraining = true;
+      void this.drainAudioQueue();
+    }
+  }
+
+  // Plays queued audio segments one at a time in order.
+  // New items pushed while draining are picked up automatically in the while loop.
+  private async drainAudioQueue(): Promise<void> {
+    while (this.audioQueue.length > 0) {
+      if (this.examEnded) break;  // don't play audio after exam ends
+      const base64 = this.audioQueue.shift()!;
+      await this.playBase64Audio(base64);
+    }
+    this.audioQueue = [];
+    this.isDraining = false;
+    // Notify waitForAudioDone() that we're finished
+    if (this.drainResolve) {
+      this.drainResolve();
+      this.drainResolve = null;
+    }
+  }
+
+  // Returns a Promise that resolves when the audio queue is fully drained.
+  // If nothing is queued or playing, resolves immediately.
+  private waitForAudioDone(): Promise<void> {
+    if (!this.isDraining && this.audioQueue.length === 0) {
+      return Promise.resolve();
+    }
+    return new Promise<void>(resolve => {
+      this.drainResolve = resolve;
+    });
   }
 
   // ─── Step 4: End exam (timer or user button) ─────────────────────────────

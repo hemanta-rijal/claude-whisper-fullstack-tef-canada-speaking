@@ -17,6 +17,14 @@ export const userRepository = {
       select: { id: true, email: true, name: true },
     });
   },
+
+  async createUser(input: { email: string; name?: string; passwordHash: string }): Promise<{ id: string }> {
+    // Prisma -> SQL-ish: INSERT INTO User (email, name, passwordHash) VALUES (?, ?, ?);
+    return prisma.user.create({
+      data: input,
+      select: { id: true }, // only return the id — service needs it to create a session
+    });
+  }
 };
 
 
