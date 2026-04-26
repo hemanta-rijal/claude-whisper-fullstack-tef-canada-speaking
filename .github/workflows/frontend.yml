@@ -45,6 +45,9 @@ jobs:
         run: npx ng test --no-watch
         # --no-watch exits after test suite finishes (non-interactive CI mode)
 
+      - name: Create production environment file
+        run: echo "${{ secrets.FRONTEND_ENV_PROD }}" > src/environments/environment.prod.ts
+
       - name: Build (production)
         run: npm run build
 
