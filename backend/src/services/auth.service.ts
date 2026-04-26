@@ -1,23 +1,24 @@
 import bcrypt from 'bcryptjs';
 import { userRepository } from '../repositories/user.repository.js';
 import { sessionRepository } from '../repositories/session.repository.js';
+import { AppError } from '../lib/errors.js';
 
 // Service layer: business logic (no Express req/res here).
 export const authService = {
   async loginWithPassword(input: { email?: string; password?: string }): Promise<{ userId: string; sessionId: string }> {
     const email = input.email ?? '';
     const password = input.password ?? '';
-    
+
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      throw new Error("Invalid email or password");
+      throw new AppError(401, 'Invalid email or password');
     }
     if (!user.passwordHash) {
-      throw new Error("Password login not enabled for this user");
+      throw new AppError(401, 'Password login not enabled for this account');
     }
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
-      throw new Error("Invalid email or password");
+      throw new AppError(401, 'Invalid email or password');
     }
     // TODO: decide expiry duration and create a session row in DB
 
@@ -29,10 +30,9 @@ export const authService = {
     const password = input.password ?? '';
     const name = input.name;
 
-    //check exist 
-    const user = await userRepository.findByEmail(email);
-    if (user) {
-      throw new Error("User account has already been created")
+    const existing = await userRepository.findByEmail(email);
+    if (existing) {
+      throw new AppError(409, 'Email already in use');
     }
     const passwordHash = await bcrypt.hash(password, 12);
     const newUser = await userRepository.createUser(

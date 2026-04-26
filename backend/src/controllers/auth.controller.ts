@@ -3,7 +3,7 @@ import { authService } from '../services/auth.service.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { sessionRepository } from '../repositories/session.repository.js';
 import type { RegisterInput, LoginInput } from '../services/auth.service.js';
-import { error } from 'node:console';
+import { AppError } from '../lib/errors.js';
 
 const SESSION_COOKIE = 'sid';
 
@@ -24,8 +24,14 @@ export async function loginController(req: Request, res: Response): Promise<void
     const result = await authService.loginWithPassword({ email, password });
     res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
     res.status(200).json({ ok: true, userId: result.userId });
-  } catch {
-    res.status(401).json({ error: 'Invalid email or password' });
+  } catch (err) {
+    // AppError carries the exact status code decided by the service layer.
+    // Anything else is an unexpected server failure — never expose its message externally.
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 }
 
@@ -53,11 +59,15 @@ export async function logoutController(req: Request, res: Response): Promise<voi
 export async function registerController(req: Request, res: Response): Promise<void>{
   const { email, name, password } = (req.body ?? {}) as RegisterInput;
   try {
-    const result = await authService.registerWithPassword({ email, name, password })
-    res.cookie(SESSION_COOKIE, result.sessionId,COOKIE_OPTIONS);
-    res.status(201).json({ok: true, userId: result.userId});
-  } catch {
-    res.status(409).json({ error: 'Email already in use' });
+    const result = await authService.registerWithPassword({ email, name, password });
+    res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
+    res.status(201).json({ ok: true, userId: result.userId });
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 }
 
