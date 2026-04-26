@@ -216,7 +216,7 @@ export async function getResultsController(req: Request, res: Response): Promise
 // GET /results/:id
 // Returns one result — scoped to the logged-in user
 export async function getResultByIdController(req: Request, res: Response): Promise<void> {
-  const result = await resultRepository.findById(req.params.id, req.user!.id);
+  const result = await resultRepository.findById(String(req.params.id), req.user!.id);
   if (!result) {
     res.status(404).json({ error: 'Result not found' });
     return;
