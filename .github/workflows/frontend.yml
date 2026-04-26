@@ -42,8 +42,8 @@ jobs:
         run: npm run lint --if-present
 
       - name: Run tests
-        run: npm test -- --run
-        # --run flag exits after test suite finishes (non-watch mode for Vitest)
+        run: npx ng test --no-watch
+        # --no-watch exits after test suite finishes (non-interactive CI mode)
 
       - name: Build (production)
         run: npm run build
@@ -108,6 +108,8 @@ jobs:
 
     steps:
       - name: Deploy to server via SSH
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         # Prerequisites:
         #   1. Add SSH_PRIVATE_KEY, SSH_HOST, SSH_USER, SSH_PORT as repository secrets.
         #   2. Replace port/path values to match your server setup.
@@ -117,12 +119,9 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: IMAGE
           script: |
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker pull "$IMAGE"
             docker stop frontend || true
             docker rm frontend || true
-            docker run -d \
-              --name frontend \
-              --restart unless-stopped \
-              -p 80:80 \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker run -d --name frontend --restart unless-stopped -p 80:80 "$IMAGE"

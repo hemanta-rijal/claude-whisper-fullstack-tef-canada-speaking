@@ -126,6 +126,8 @@ jobs:
 
     steps:
       - name: Deploy to server via SSH
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         # Prerequisites:
         #   1. Add SSH_PRIVATE_KEY, SSH_HOST, SSH_USER, SSH_PORT as repository secrets.
         #   2. Replace <your-server-path> with the actual deployment path.
@@ -135,13 +137,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: IMAGE
           script: |
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker pull "$IMAGE"
             docker stop backend || true
             docker rm backend || true
-            docker run -d \
-              --name backend \
-              --restart unless-stopped \  
-              -p 3000:3000 \
-              --env-file /etc/tef_backend/.env \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ENV_FILE_ARG=""
+            if [ -f /etc/tef_backend/.env ]; then
+              ENV_FILE_ARG="--env-file /etc/tef_backend/.env"
+            fi
+            docker run -d --name backend --restart unless-stopped -p 3000:3000 $ENV_FILE_ARG "$IMAGE"
