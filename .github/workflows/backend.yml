@@ -152,6 +152,8 @@ jobs:
             # Run Prisma migrations before starting the server
             docker run --rm --network host $ENV_FILE_ARG "$IMAGE" \
               npx prisma migrate deploy
+            # Replace any existing container with the same name (avoids "name already in use")
+            docker rm -f backend 2>/dev/null || true
             # Start the backend server
             docker run -d --name backend --restart unless-stopped \
               --network host \
