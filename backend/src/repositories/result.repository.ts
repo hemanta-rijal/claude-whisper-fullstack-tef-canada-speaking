@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 type CreateResultInput = {
@@ -14,19 +15,18 @@ type CreateResultInput = {
   feedback: string;
   suggestions: string;
   reason: string;
+  deliverySummary?: Prisma.InputJsonValue;
 };
 
 export const resultRepository = {
   async create(input: CreateResultInput) {
     // Prisma -> SQL: INSERT INTO TestResult (...) VALUES (...)
-    return prisma.testResult.create({ data: input });
-  },
-
-  async findAllByUser(userId: string) {
-    // Prisma -> SQL: SELECT * FROM TestResult WHERE userId = ? ORDER BY completedAt DESC
-    return prisma.testResult.findMany({
-      where: { userId },
-      orderBy: { completedAt: 'desc' },
+    const { deliverySummary, ...rest } = input;
+    return prisma.testResult.create({
+      data: {
+        ...rest,
+        ...(deliverySummary !== undefined ? { deliverySummary } : {}),
+      },
     });
   },
 
@@ -35,5 +35,32 @@ export const resultRepository = {
     return prisma.testResult.findFirst({
       where: { id, userId },
     });
+  },
+
+  /** Most recent attempts — dashboard. LEARN: `take` + `orderBy` = SQL LIMIT + ORDER BY DESC */
+  async findRecentByUser(userId: string, limit: number) {
+    return prisma.testResult.findMany({
+      where: { userId },
+      orderBy: { completedAt: 'desc' },
+      take: limit,
+    });
+  },
+
+  /**
+   * Server-side pagination. LEARN: `skip` = (page-1)*pageSize; parallel `count` for total pages.
+   */
+  async findPagedByUser(userId: string, page: number, pageSize: number) {
+    const skip = (page - 1) * pageSize;
+    const [items, total] = await Promise.all([
+      prisma.testResult.findMany({
+        where: { userId },
+        orderBy: { completedAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      prisma.testResult.count({ where: { userId } }),
+    ]);
+    const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
+    return { items, total, page, pageSize, totalPages };
   },
 };

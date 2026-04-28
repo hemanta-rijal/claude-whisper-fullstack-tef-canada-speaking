@@ -1,0 +1,127 @@
+<div class="dash-app">
+  <nav class="dash-nav">
+    <a routerLink="/dashboard" class="dash-nav__brand dash-nav__brand--link">
+      <div class="dash-nav__icon">
+        <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+        </svg>
+      </div>
+      <div class="dash-nav__titles">
+        <p class="dash-nav__name">TEF Canada</p>
+        <p class="dash-nav__tag">All results</p>
+      </div>
+    </a>
+    <div class="dash-nav__actions">
+      <span class="dash-nav__user">{{ auth.currentUser()?.name ?? auth.currentUser()?.email }}</span>
+      <button type="button" class="dash-nav__out" (click)="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <main class="dash-main">
+    <header class="dash-hero">
+      <div>
+        <p class="dash-hero__eyebrow">History</p>
+        <h1 class="dash-hero__title">Full results</h1>
+        <p class="dash-hero__desc">
+          @if (total() > 0) {
+            {{ total() }} exam(s) · page {{ page() }} of {{ totalPages() || 1 }}
+          } @else {
+            Paginated server-side · 10 per page
+          }
+        </p>
+      </div>
+      <div class="dash-hero__ctas">
+        <a routerLink="/dashboard" class="btn btn--ghost btn--sm">Overview</a>
+        <a routerLink="/exam/select" class="btn btn--primary btn--sm">+ New exam</a>
+      </div>
+    </header>
+
+    @if (loading()) {
+      <div class="dash-state">
+        <span class="spinner spinner--accent spinner--lg"></span>
+      </div>
+    } @else if (results().length === 0) {
+      <div class="dash-empty">
+        <h2>No results</h2>
+        <p>Complete an exam to see it listed here.</p>
+        <a routerLink="/exam/select" class="btn btn--primary">Start exam</a>
+      </div>
+    } @else {
+      @if (trendPoints().length >= 2) {
+        <section class="dash-panel dash-panel--chart" aria-label="Trend from recent attempts">
+          <h2 class="dash-panel__title">Overall trend (last {{ trendSource().length }} attempts)</h2>
+          <p class="dash-panel__hint">Uses your most recent sessions regardless of the table page.</p>
+          <app-score-trend-chart [points]="trendPoints()" datasetLabel="Overall (/5)" />
+        </section>
+      }
+
+      <section class="dash-panel">
+        <h2 class="dash-panel__title">Page {{ page() }}</h2>
+        <div class="result-list">
+          @for (result of results(); track result.id) {
+            @let isHigh = result.overallScore >= 4;
+            @let isMid  = result.overallScore >= 3 && result.overallScore < 4;
+            <a class="result-card" [routerLink]="['/results', result.id]">
+              <div class="result-card__score"
+                [class.result-card__score--high]="isHigh"
+                [class.result-card__score--mid]="isMid"
+                [class.result-card__score--low]="!isHigh && !isMid"
+              >
+                <span class="score-num"
+                  [class.score-num--high]="isHigh"
+                  [class.score-num--mid]="isMid"
+                  [class.score-num--low]="!isHigh && !isMid"
+                >{{ result.overallScore }}</span>
+                <span class="score-denom">/5</span>
+              </div>
+              <div class="result-card__body">
+                <div class="result-card__meta">
+                  <span class="section-label">Section {{ result.sections }}</span>
+                  <span class="dot">·</span>
+                  <span class="date-label">{{ result.completedAt | date:'MMM d, y · h:mm a' }}</span>
+                  @if (result.cefrLevel) {
+                    <span class="dot">·</span>
+                    <span class="cefr-chip"
+                      [class.cefr-chip--a]="result.cefrLevel === 'A1' || result.cefrLevel === 'A2'"
+                      [class.cefr-chip--b]="result.cefrLevel === 'B1' || result.cefrLevel === 'B2'"
+                      [class.cefr-chip--c]="result.cefrLevel === 'C1' || result.cefrLevel === 'C2'"
+                    >{{ result.cefrLevel }}</span>
+                  }
+                </div>
+                <p class="result-card__reason">{{ result.reason === 'timeout' ? 'Full duration' : 'Ended early' }}</p>
+                <div class="result-card__chips">
+                  @for (item of [
+                    { label: 'Vocabulary', score: result.lexicalRichness },
+                    { label: 'Task', score: result.taskFulfillment },
+                    { label: 'Grammar', score: result.grammar },
+                    { label: 'Coherence', score: result.coherence }
+                  ]; track item.label) {
+                    <div class="chip">
+                      {{ item.label }}
+                      <span
+                        [class.chip-high]="item.score >= 4"
+                        [class.chip-mid]="item.score >= 3 && item.score < 4"
+                        [class.chip-low]="item.score < 3"
+                      >{{ item.score }}/5</span>
+                    </div>
+                  }
+                </div>
+              </div>
+              <svg class="result-card__arrow" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
+              </svg>
+            </a>
+          }
+        </div>
+      </section>
+
+      @if (totalPages() > 1) {
+        <div class="results-pager">
+          <button type="button" class="btn btn--ghost btn--sm" (click)="goPrev()" [disabled]="page() <= 1">Previous</button>
+          <span class="results-pager__status">Page {{ page() }} / {{ totalPages() }}</span>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="goNext()" [disabled]="page() >= totalPages()">Next</button>
+        </div>
+      }
+    }
+  </main>
+</div>

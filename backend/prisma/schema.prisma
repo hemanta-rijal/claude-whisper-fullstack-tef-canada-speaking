@@ -75,6 +75,9 @@ model TestResult {
   // How the exam ended
   reason String  // 'timeout' | 'user_terminated'
 
+  // Per-candidate-turn fluency metrics (Whisper segments / pauses). Nullable for older rows.
+  deliverySummary Json?
+
   completedAt DateTime @default(now())
 
   @@index([userId])

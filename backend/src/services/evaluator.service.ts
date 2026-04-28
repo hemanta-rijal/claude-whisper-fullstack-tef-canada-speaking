@@ -1,22 +1,50 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getEnv } from '../lib/env.js';
 import type { Turn } from './examiner.service.js';
+import type { DeliverySnapshot } from './delivery-metrics.js';
+import { formatDeliveryLogForEvaluator } from './delivery-metrics.js';
+import { evaluationResultSchema, type EvaluationResult } from '../schemas/evaluation.schemas.js';
 
 const anthropic = new Anthropic({ apiKey: getEnv().anthropicApiKey });
 
-// The structured evaluation Claude returns — maps directly to TestResult in the DB.
-export type EvaluationResult = {
-  cefrLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-  overallScore: number;       // 0.0–5.0
-  sectionAScore: number | null;
-  sectionBScore: number | null;
-  lexicalRichness: number;    // 0.0–5.0
-  taskFulfillment: number;    // 0.0–5.0
-  grammar: number;            // 0.0–5.0
-  coherence: number;          // 0.0–5.0
-  feedback: string;
-  suggestions: string;
-};
+export type { EvaluationResult };
+
+/**
+ * Strips markdown fences and isolates the first `{` … `}` block — models often add chatter.
+ */
+function extractJsonObject(raw: string): string {
+  const trimmed = raw
+    .trim()
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/```\s*$/i, '')
+    .trim();
+  const start = trimmed.indexOf('{');
+  const end = trimmed.lastIndexOf('}');
+  if (start === -1 || end <= start) {
+    throw new Error('Evaluator model output contained no JSON object');
+  }
+  return trimmed.slice(start, end + 1);
+}
+
+/** Parses and validates evaluator JSON — throws with context on failure (caught → 500). */
+function parseEvaluatorResponse(modelText: string): EvaluationResult {
+  const jsonStr = extractJsonObject(modelText);
+  let raw: unknown;
+  try {
+    raw = JSON.parse(jsonStr);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('Evaluator JSON.parse error:', msg, 'snippet:', jsonStr.slice(0, 400));
+    throw new Error(`Evaluator JSON was not valid: ${msg}`);
+  }
+  const parsed = evaluationResultSchema.safeParse(raw);
+  if (!parsed.success) {
+    console.error('Evaluator Zod issues:', parsed.error.flatten());
+    throw new Error('Evaluator JSON did not match the expected rubric shape');
+  }
+  return parsed.data;
+}
 
 /**
  * Evaluates the full conversation after the exam ends.
@@ -28,12 +56,15 @@ export async function evaluateConversation(
   history: Turn[],
   sections: ('A' | 'B')[],
   reason: 'timeout' | 'user_terminated',
+  candidateDelivery: DeliverySnapshot[] = [],
 ): Promise<EvaluationResult> {
 
   // Format the conversation as a readable transcript for Claude to assess.
   const transcript = history
     .map(t => `${t.role === 'examiner' ? 'Examinatrice' : 'Candidat'}: ${t.content}`)
     .join('\n');
+
+  const deliveryBlock = formatDeliveryLogForEvaluator(history, candidateDelivery);
 
   const sectionsLabel = sections.join(' et ');
 
@@ -43,8 +74,15 @@ Tu es un examinateur certifié du TEF Canada (Test d'Évaluation de Français).
 Section(s) évaluée(s) : Section ${sectionsLabel}.
 ${reason === 'user_terminated' ? 'Note : le candidat a mis fin à l\'examen avant la fin du temps imparti — tiens-en compte dans taskFulfillment.' : ''}
 
+${deliveryBlock}
+
 TRANSCRIPTION :
 ${transcript}
+
+DISFLUENCES ET TRANSCRIPTION ORALE :
+- La transcription provient d'un système automatique : hésitations ("euh"), allongements ("ahhh"), faux départs et réformulations peuvent apparaître comme plusieurs morceaux ou ponctuation étrange.
+- Pour grammar et lexicalRichness : évalue surtout le propos final ou l'intention globale ; ne pénalise pas deux fois une même erreur annulée par une réformulation immédiate.
+- Pour coherence : utilise les DONNÉES OBJECTIVES DE FLUIDITÉ ci-dessus (longues pauses, nombre de segments, débit) pour calibrer les hésitations et la fragmentation. Une seule micro-coupure ne doit pas faire chuter le score comme un discours illisible.
 
 NIVEAU CEFR À ATTRIBUER :
 Choisis UN seul niveau parmi : A1, A2, B1, B2, C1, C2.
@@ -94,18 +132,22 @@ CRITÈRES D'ÉVALUATION (chaque critère noté de 0.0 à 5.0) :
   - L'incapacité à enchaîner naturellement après une réponse de l'examinatrice (−0.5)
   - Les hésitations longues ("euh... euh...") avant chaque réponse (−0.5)
 
-Réponds UNIQUEMENT avec ce JSON valide (aucun texte avant ou après, pas de markdown) :
+Réponds UNIQUEMENT avec un objet JSON valide sur une ou plusieurs lignes (aucun texte avant ou après, pas de markdown).
+Utilise de vraies valeurs : pour cefrLevel une seule chaîne parmi A1, A2, B1, B2, C1, C2 (sans chevrons ni alternatives).
+Pour sectionAScore et sectionBScore utilise un nombre décimal OU la valeur null JSON (sans guillemets) si la section n'a pas été passée.
+
+Exemple de forme (avec des scores fictifs — adapte à la performance réelle) :
 {
-  "cefrLevel": "<A1 | A2 | B1 | B2 | C1 | C2>",
-  "overallScore": <moyenne arithmétique des 4 critères, arrondie à 1 décimale>,
-  "sectionAScore": <score global section A ou null si non testée>,
-  "sectionBScore": <score global section B ou null si non testée>,
-  "lexicalRichness": <0.0–5.0>,
-  "taskFulfillment": <0.0–5.0>,
-  "grammar": <0.0–5.0>,
-  "coherence": <0.0–5.0>,
-  "feedback": "<2–3 phrases de feedback général en français, bienveillant mais honnête>",
-  "suggestions": "<2–3 conseils d'amélioration concrets et actionnables en français>"
+  "cefrLevel": "B1",
+  "overallScore": 2.8,
+  "sectionAScore": 2.8,
+  "sectionBScore": null,
+  "lexicalRichness": 2.5,
+  "taskFulfillment": 3.0,
+  "grammar": 2.5,
+  "coherence": 3.0,
+  "feedback": "...",
+  "suggestions": "..."
 }
 `.trim();
 
@@ -120,16 +162,5 @@ Réponds UNIQUEMENT avec ce JSON valide (aucun texte avant ou après, pas de mar
     throw new Error('Unexpected non-text response from Claude evaluator');
   }
 
-  // Claude sometimes wraps its response in a markdown code fence (```json ... ```)
-  // even when told not to. Strip it before parsing.
-  // LEARN: this defensive cleaning is standard practice when parsing LLM JSON output.
-  const cleaned = block.text
-    .trim()
-    .replace(/^```json\s*/i, '')  // remove opening ```json
-    .replace(/^```\s*/i, '')      // remove opening ``` (no language tag)
-    .replace(/```\s*$/i, '')      // remove closing ```
-    .trim();
-
-  const parsed = JSON.parse(cleaned) as EvaluationResult;
-  return parsed;
+  return parseEvaluatorResponse(block.text);
 }

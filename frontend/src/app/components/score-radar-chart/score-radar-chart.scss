@@ -1,0 +1,9 @@
+.chart-surface {
+  position: relative;
+  width: 100%;
+  height: min(320px, 55vw);
+
+  canvas {
+    display: block;
+  }
+}

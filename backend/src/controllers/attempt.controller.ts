@@ -90,6 +90,7 @@ export async function processTurnController(req: Request, res: Response): Promis
     transcript: result.transcript,
     examinerText: result.examinerText,
     examinerAudio: result.skipped ? '' : audioToBase64(result.examinerAudio),
+    delivery: result.delivery,
   });
 }
 
@@ -160,7 +161,7 @@ export async function streamTurnController(req: Request, res: Response): Promise
           emit('skipped', {});
           break;
         case 'transcript':
-          emit('transcript', { text: event.text });
+          emit('transcript', { text: event.text, delivery: event.delivery });
           break;
         case 'audio':
           emit('audio', { sentenceText: event.sentenceText, base64: event.base64 });
@@ -181,14 +182,28 @@ export async function streamTurnController(req: Request, res: Response): Promise
 }
 
 // POST /attempts/:id/finish
-// Body: { history, sections, scenarioId, reason }
+// Body: { history, sections, scenarioId, reason, candidateDelivery? }
 // Returns: closing line text + audio + full evaluation scores
 export async function finishAttemptController(req: Request, res: Response): Promise<void> {
-  const { history, sections, scenarioId, reason } = req.body as {
+  const {
+    history,
+    sections,
+    scenarioId,
+    reason,
+    candidateDelivery,
+  } = req.body as {
     history: Turn[];
     sections: ('A' | 'B')[];
     scenarioId: string;
     reason: 'timeout' | 'user_terminated';
+    candidateDelivery?: Array<{
+      durationSec: number;
+      segmentCount: number;
+      speechDurationSec: number;
+      longestPauseSec: number;
+      wordsEstimate: number;
+      wordsPerMinute: number | null;
+    }>;
   };
 
   const result = await finishAttempt(
@@ -197,6 +212,7 @@ export async function finishAttemptController(req: Request, res: Response): Prom
     sections,
     scenarioId,
     reason,
+    candidateDelivery ?? [],
   );
 
   res.status(200).json({
@@ -206,11 +222,26 @@ export async function finishAttemptController(req: Request, res: Response): Prom
   });
 }
 
-// GET /results
-// Returns all past test results for the logged-in user
-export async function getResultsController(req: Request, res: Response): Promise<void> {
-  const results = await resultRepository.findAllByUser(req.user!.id);
+// GET /attempts/results/recent?limit=10 — latest results for dashboard (default 10, max 50)
+export async function getRecentResultsController(req: Request, res: Response): Promise<void> {
+  const limit = parseQueryInt(req.query.limit, 10, 1, 50);
+  const results = await resultRepository.findRecentByUser(req.user!.id, limit);
   res.status(200).json(results);
+}
+
+// GET /attempts/results/paged?page=1&pageSize=10 — full history with server-side pagination
+export async function getResultsPagedController(req: Request, res: Response): Promise<void> {
+  const page = parseQueryInt(req.query.page, 1, 1, 10_000);
+  const pageSize = parseQueryInt(req.query.pageSize, 10, 1, 50);
+  const data = await resultRepository.findPagedByUser(req.user!.id, page, pageSize);
+  res.status(200).json(data);
+}
+
+/** Parses a non-negative int query param with clamps. */
+function parseQueryInt(raw: unknown, fallback: number, min: number, max: number): number {
+  const n = Number.parseInt(String(raw ?? ''), 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
 }
 
 // GET /results/:id

@@ -1,131 +1,183 @@
-<div class="dashboard">
-
-  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
-  <nav class="dashboard-nav">
-    <div class="dashboard-nav__brand">
-      <div class="brand-icon">
-        <svg fill="currentColor" viewBox="0 0 24 24">
+<div class="dash-app">
+  <nav class="dash-nav">
+    <div class="dash-nav__brand">
+      <div class="dash-nav__icon">
+        <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
         </svg>
       </div>
-      <div class="brand-text">
-        <p>TEF Canada</p>
-        <p>Speaking Evaluation</p>
+      <div class="dash-nav__titles">
+        <p class="dash-nav__name">TEF Canada</p>
+        <p class="dash-nav__tag">Speaking lab</p>
       </div>
     </div>
-
-    <div class="dashboard-nav__actions">
-      <span class="dashboard-nav__user">
-        {{ auth.currentUser()?.name ?? auth.currentUser()?.email }}
-      </span>
-      <button class="dashboard-nav__signout" (click)="logout()">Sign out</button>
+    <div class="dash-nav__actions">
+      <span class="dash-nav__user">{{ auth.currentUser()?.name ?? auth.currentUser()?.email }}</span>
+      <button type="button" class="dash-nav__out" (click)="logout()">Sign out</button>
     </div>
   </nav>
 
-  <!-- ── Page body ───────────────────────────────────────────────────────── -->
-  <div class="dashboard-content">
-
-    <div class="dashboard-header">
+  <main class="dash-main">
+    <header class="dash-hero">
       <div>
-        <h2>Your Results</h2>
-        <p>Review your past speaking evaluations</p>
+        <p class="dash-hero__eyebrow">Overview</p>
+        <h1 class="dash-hero__title">Your speaking analytics</h1>
+        <p class="dash-hero__desc">
+          Based on your <strong>10 most recent</strong> attempts: compare rubric dimensions over time,
+          spot your best overall score, and read the latest examiner suggestions — all beside your session list.
+        </p>
       </div>
-      <a routerLink="/exam/select" class="btn btn--primary btn--sm">+ New Exam</a>
-    </div>
+      <div class="dash-hero__ctas">
+        <a routerLink="/results" class="btn btn--ghost btn--sm">All results</a>
+        <a routerLink="/exam/select" class="btn btn--primary btn--sm">+ New exam</a>
+      </div>
+    </header>
 
-    <!-- Loading -->
     @if (loading()) {
-      <div class="dashboard-loading">
-        <span class="spinner spinner--accent"></span>
+      <div class="dash-state">
+        <span class="spinner spinner--accent spinner--lg"></span>
       </div>
-    }
-
-    <!-- Empty -->
-    @else if (results().length === 0) {
-      <div class="dashboard-empty">
-        <div class="empty-icon">
-          <svg fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
-          </svg>
-        </div>
-        <h3>No exams yet</h3>
-        <p>Take your first TEF Canada speaking exam to see your score breakdown here.</p>
-        <a routerLink="/exam/select" class="btn btn--primary">Start your first exam</a>
+    } @else if (results().length === 0) {
+      <div class="dash-empty">
+        <h2>No data yet</h2>
+        <p>Complete a practice exam to unlock charts, averages, and suggestions.</p>
+        <a routerLink="/exam/select" class="btn btn--primary">Start exam</a>
       </div>
-    }
-
-    <!-- Results list -->
-    @else {
-      <div class="result-list">
-        @for (result of results(); track result.id) {
-
-          <!-- Score helper variables -->
-          @let isHigh = result.overallScore >= 4;
-          @let isMid  = result.overallScore >= 3 && result.overallScore < 4;
-
-          <a class="result-card" [routerLink]="['/results', result.id]">
-
-            <!-- Score badge -->
-            <div class="result-card__score"
-              [class.result-card__score--high]="isHigh"
-              [class.result-card__score--mid]="isMid"
-              [class.result-card__score--low]="!isHigh && !isMid"
-            >
-              <span class="score-num"
-                [class.score-num--high]="isHigh"
-                [class.score-num--mid]="isMid"
-                [class.score-num--low]="!isHigh && !isMid"
-              >{{ result.overallScore }}</span>
-              <span class="score-denom">/5</span>
-            </div>
-
-            <!-- Details -->
-            <div class="result-card__body">
-              <div class="result-card__meta">
-                <span class="section-label">Section {{ result.sections }}</span>
-                <span class="dot">·</span>
-                <span class="date-label">{{ result.completedAt | date:'MMM d, y · h:mm a' }}</span>
-                <span class="dot">·</span>
-                @if (result.cefrLevel) {
-                  <span class="cefr-chip"
-                    [class.cefr-chip--a]="result.cefrLevel === 'A1' || result.cefrLevel === 'A2'"
-                    [class.cefr-chip--b]="result.cefrLevel === 'B1' || result.cefrLevel === 'B2'"
-                    [class.cefr-chip--c]="result.cefrLevel === 'C1' || result.cefrLevel === 'C2'"
-                  >{{ result.cefrLevel }}</span>
-                }
-              </div>
-              <p class="result-card__reason">
-                {{ result.reason === 'timeout' ? 'Completed full duration' : 'Ended early' }}
+    } @else {
+      <div class="dash-two-col">
+        <!-- LEARN: Sidebar = computed insights; primary column = charts + list (wider on lg screens). -->
+        <aside class="dash-sidebar" aria-label="Summary insights">
+          <section class="insight-card">
+            <h2 class="insight-card__title">Highest overall</h2>
+            @if (bestExam(); as be) {
+              <p class="insight-stat">
+                <span class="insight-stat__value">{{ be.overallScore | number:'1.1-1' }}</span>
+                <span class="insight-stat__max">/5</span>
               </p>
+              <p class="insight-meta">{{ be.completedAt | date:'mediumDate' }} · Section {{ be.sections }}</p>
+              @if (be.cefrLevel) {
+                <p class="insight-meta">CEFR on that day: <strong>{{ be.cefrLevel }}</strong></p>
+              }
+              <a [routerLink]="['/results', be.id]" class="insight-link">Open this attempt →</a>
+            }
+          </section>
 
-              <div class="result-card__chips">
-                @for (item of [
-                  { label: 'Vocabulary', score: result.lexicalRichness },
-                  { label: 'Task',       score: result.taskFulfillment },
-                  { label: 'Grammar',    score: result.grammar },
-                  { label: 'Coherence',  score: result.coherence }
-                ]; track item.label) {
-                  <div class="chip">
-                    {{ item.label }}
-                    <span
-                      [class.chip-high]="item.score >= 4"
-                      [class.chip-mid]="item.score >= 3 && item.score < 4"
-                      [class.chip-low]="item.score < 3"
-                    >{{ item.score }}/5</span>
+          @if (dimensionInsight(); as dim) {
+            <section class="insight-card">
+              <h2 class="insight-card__title">Dimension focus</h2>
+              <p class="insight-line">
+                <span class="insight-label">Strongest on average</span>
+                <span class="insight-pill insight-pill--good">{{ dim.strongest.key }} · {{ dim.strongest.val | number:'1.1-1' }}</span>
+              </p>
+              <p class="insight-line">
+                <span class="insight-label">Room to grow</span>
+                <span class="insight-pill insight-pill--grow">{{ dim.weakest.key }} · {{ dim.weakest.val | number:'1.1-1' }}</span>
+              </p>
+            </section>
+          }
+
+          @if (dimensionAverages(); as avg) {
+            <section class="insight-card">
+              <h2 class="insight-card__title">Average rubric ({{ results().length }} exams)</h2>
+              <table class="avg-table">
+                <tbody>
+                  <tr><td>Lexical richness</td><td>{{ avg.lexical | number:'1.1-1' }}</td></tr>
+                  <tr><td>Task fulfillment</td><td>{{ avg.task | number:'1.1-1' }}</td></tr>
+                  <tr><td>Grammar</td><td>{{ avg.grammar | number:'1.1-1' }}</td></tr>
+                  <tr><td>Coherence</td><td>{{ avg.coherence | number:'1.1-1' }}</td></tr>
+                </tbody>
+              </table>
+            </section>
+          }
+
+          <section class="insight-card insight-card--prose">
+            <h2 class="insight-card__title">Latest suggestions</h2>
+            <p class="insight-suggestion">{{ latestSuggestions() || 'No suggestion text on the latest result.' }}</p>
+            @if (latestResult(); as lr) {
+              <a [routerLink]="['/results', lr.id]" class="insight-link">Full result & charts →</a>
+            }
+          </section>
+        </aside>
+
+        <div class="dash-primary">
+          @if (trendPoints().length >= 2) {
+            <section class="dash-panel dash-panel--chart" aria-label="Overall score trend">
+              <h2 class="dash-panel__title">Overall score over time</h2>
+              <p class="dash-panel__hint">Older sessions on the left, newer on the right.</p>
+              <app-score-trend-chart [points]="trendPoints()" datasetLabel="Overall (/5)" />
+            </section>
+          }
+
+          @if (rubricTrendPoints().length >= 1) {
+            <section class="dash-panel dash-panel--chart" aria-label="Rubric comparison">
+              <h2 class="dash-panel__title">Compare rubric dimensions</h2>
+              <p class="dash-panel__hint">Four lines track lexical, task, grammar, and coherence per session. The gold dashed line is a practice target (~B2+ / CLB 7 band on this 0–5 rubric), not an official exam mapping.</p>
+              <app-rubric-trend-chart [points]="rubricTrendPoints()" />
+            </section>
+          }
+
+          <section class="dash-panel">
+            <h2 class="dash-panel__title">Recent attempts</h2>
+            <p class="dash-panel__hint">Newest first — same data as the charts above.</p>
+            <div class="result-list">
+              @for (result of results(); track result.id) {
+                @let isHigh = result.overallScore >= 4;
+                @let isMid  = result.overallScore >= 3 && result.overallScore < 4;
+                <a class="result-card" [routerLink]="['/results', result.id]">
+                  <div class="result-card__score"
+                    [class.result-card__score--high]="isHigh"
+                    [class.result-card__score--mid]="isMid"
+                    [class.result-card__score--low]="!isHigh && !isMid"
+                  >
+                    <span class="score-num"
+                      [class.score-num--high]="isHigh"
+                      [class.score-num--mid]="isMid"
+                      [class.score-num--low]="!isHigh && !isMid"
+                    >{{ result.overallScore }}</span>
+                    <span class="score-denom">/5</span>
                   </div>
-                }
-              </div>
+                  <div class="result-card__body">
+                    <div class="result-card__meta">
+                      <span class="section-label">Section {{ result.sections }}</span>
+                      <span class="dot">·</span>
+                      <span class="date-label">{{ result.completedAt | date:'MMM d, y · h:mm a' }}</span>
+                      @if (result.cefrLevel) {
+                        <span class="dot">·</span>
+                        <span class="cefr-chip"
+                          [class.cefr-chip--a]="result.cefrLevel === 'A1' || result.cefrLevel === 'A2'"
+                          [class.cefr-chip--b]="result.cefrLevel === 'B1' || result.cefrLevel === 'B2'"
+                          [class.cefr-chip--c]="result.cefrLevel === 'C1' || result.cefrLevel === 'C2'"
+                        >{{ result.cefrLevel }}</span>
+                      }
+                    </div>
+                    <p class="result-card__reason">{{ result.reason === 'timeout' ? 'Full duration' : 'Ended early' }}</p>
+                    <div class="result-card__chips">
+                      @for (item of [
+                        { label: 'Vocabulary', score: result.lexicalRichness },
+                        { label: 'Task', score: result.taskFulfillment },
+                        { label: 'Grammar', score: result.grammar },
+                        { label: 'Coherence', score: result.coherence }
+                      ]; track item.label) {
+                        <div class="chip">
+                          {{ item.label }}
+                          <span
+                            [class.chip-high]="item.score >= 4"
+                            [class.chip-mid]="item.score >= 3 && item.score < 4"
+                            [class.chip-low]="item.score < 3"
+                          >{{ item.score }}/5</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <svg class="result-card__arrow" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
+                  </svg>
+                </a>
+              }
             </div>
-
-            <!-- Arrow -->
-            <svg class="result-card__arrow" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/>
-            </svg>
-
-          </a>
-        }
+          </section>
+        </div>
       </div>
     }
-
-  </div>
+  </main>
 </div>

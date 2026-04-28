@@ -5,6 +5,16 @@ import { environment } from '../../environments/environment';
 
 const API = environment.apiUrl;
 
+/** Mirrors backend Whisper-derived fluency metrics (for grading). */
+export type DeliverySnapshot = {
+  durationSec: number;
+  segmentCount: number;
+  speechDurationSec: number;
+  longestPauseSec: number;
+  wordsEstimate: number;
+  wordsPerMinute: number | null;
+};
+
 export type TestResult = {
   id: string;
   sections: string;
@@ -20,6 +30,7 @@ export type TestResult = {
   suggestions: string;
   reason: string;
   completedAt: string;
+  deliverySummary?: DeliverySnapshot[] | null;
 };
 
 // Returned by GET /attempts/preview — instant, no AI calls
@@ -42,6 +53,7 @@ export type TurnResponse = {
   transcript: string;
   examinerText: string;
   examinerAudio: string;
+  delivery?: DeliverySnapshot;
 };
 
 export type FinishResponse = {
@@ -50,12 +62,35 @@ export type FinishResponse = {
   evaluation: Omit<TestResult, 'id' | 'completedAt' | 'reason'>;
 };
 
+/** Server-paginated results (`GET /attempts/results/paged`). */
+export type PagedTestResults = {
+  items: TestResult[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 @Injectable({ providedIn: 'root' })
 export class AttemptService {
   private http = inject(HttpClient);
 
-  async getResults(): Promise<TestResult[]> {
-    return firstValueFrom(this.http.get<TestResult[]>(`${API}/attempts/results`));
+  /** Dashboard: most recent exams only (default 10). */
+  async getRecentResults(limit = 10): Promise<TestResult[]> {
+    return firstValueFrom(
+      this.http.get<TestResult[]>(`${API}/attempts/results/recent`, {
+        params: { limit: String(limit) },
+      }),
+    );
+  }
+
+  /** Full history with server-side pagination (page is 1-based). */
+  async getResultsPaged(page: number, pageSize: number): Promise<PagedTestResults> {
+    return firstValueFrom(
+      this.http.get<PagedTestResults>(`${API}/attempts/results/paged`, {
+        params: { page: String(page), pageSize: String(pageSize) },
+      }),
+    );
   }
 
   async getResultById(id: string): Promise<TestResult> {
@@ -101,6 +136,7 @@ export class AttemptService {
     sections: ('A' | 'B')[],
     scenarioId: string,
     reason: 'timeout' | 'user_terminated',
+    candidateDelivery?: DeliverySnapshot[],
   ): Promise<FinishResponse> {
     return firstValueFrom(
       this.http.post<FinishResponse>(`${API}/attempts/${attemptId}/finish`, {
@@ -108,6 +144,7 @@ export class AttemptService {
         sections,
         scenarioId,
         reason,
+        ...(candidateDelivery && candidateDelivery.length > 0 ? { candidateDelivery } : {}),
       }),
     );
   }

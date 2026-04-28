@@ -57,7 +57,8 @@ FACTS YOU KNOW ABOUT THE AGENCY:
 
     task: `The caller has read the "Faites la fête" advertisement and wants information about organising an event. They should ask about the services available, pricing, and logistics (timing, venue vs home, how to book). The ideal outcome is that they provide enough details (event type, date, guests) for the agent to offer a free personalised quote.`,
 
-    whisperHint: `Appel à une agence événementielle. Fête, soirée, anniversaire, célébration, décoration, buffet, musique, invités, salle, domicile, devis, tarif, réservation, après-midi, personnalisé.`,
+    // LEARN: Whisper `prompt` biases vocabulary — add likely learner phrases + numbers so STT survives accent.
+    whisperHint: `Appel à une agence événementielle en français. Je voudrais des renseignements, j'appelle pour, pourriez-vous m'expliquer, combien ça coûte, quel est le prix, le tarif, c'est combien, gratuit, devis gratuit, réservation, réserver, disponible, samedi dimanche, le week-end, combien de personnes, nombre d'invités, à la maison, chez moi, sur place, enfants adultes. Fête, soirée, anniversaire, mariage, célébration, événement, décoration, thème, buffet, musique, DJ, invités, salle, domicile, après-midi, le soir, personnalisé. Zéro sept, quatre-vingt-dix-huit, soixante-seize, cinquante-quatre, trente-deux.`,
 
     closingTimeout: `Très bien, j'ai toutes les informations nécessaires pour préparer votre devis. Je vous rappelle dans les 24 heures. Merci de votre appel et à très bientôt!`,
     closingUserEnded: `Pas de problème, n'hésitez pas à rappeler au 07 98 76 54 32. On sera ravis de vous aider à organiser votre événement. Bonne journée!`,
@@ -95,9 +96,8 @@ FACTS YOU KNOW ABOUT THE CLUB:
     // The candidate's objective — used to guide Claude's behaviour and for the evaluator
     task: `The caller has read the Club de Marche advertisement and is calling for more information. They should ask about: the types of walks offered, the schedule, the membership cost, and how to join. The ideal outcome is that they get all the key information and express interest in participating (or even register for the next walk).`,
 
-    // Key French words from this scenario — primes Whisper so it transcribes
-    // domain-specific vocabulary correctly (club names, hiking terms, French phone phrases)
-    whisperHint: `Appel téléphonique au Club de Marche. Randonnées, circuits, adhésion, cotisation, inscription, tarif, samedi matin, patrimoine local, bonjour, au revoir, s'il vous plaît, merci.`,
+    // Key French words + typical learner phone phrases — helps Whisper when pronunciation is non-native.
+    whisperHint: `Appel téléphonique au Club de Marche en français. Je voudrais des renseignements, j'ai vu votre annonce, je suis intéressé, je suis intéressée, est-ce que c'est gratuit la première fois, première randonnée, comment je m'inscris, inscription en ligne, par téléphone, quel est le tarif, la cotisation, combien par an, à quelle heure, le rendez-vous, samedi matin, neuf heures, place du marché, bureau de tourisme, patrimoine, randonnée douce, marche, marcher, circuit, adhésion, adhérer, membres, bonjour, au revoir, merci, s'il vous plaît. Zéro huit cent un, douze, douze, quatre cent cinquante-et-un, club de marche point org.`,
 
     closingTimeout: `Très bien! Je note votre inscription pour samedi. On sera ravis de vous accueillir pour votre première randonnée. À très bientôt et bonne journée!`,
     closingUserEnded: `Pas de problème, n'hésitez pas à rappeler ou à consulter notre site. Bonne journée!`,
@@ -111,7 +111,7 @@ export const SECTION_B_SCENARIOS: SectionBScenario[] = [
     context: 'You are playing the role of a close friend of the user. They are trying to convince you to join a gym with them. You are NOT interested. Be friendly but skeptical. Raise natural objections (too expensive, no time, not your thing). Only let yourself be convinced if their arguments are strong and specific. Speak informal French. Keep each response to 1–3 sentences.',
     opening: 'Un abonnement de gym? Bof, je suis pas vraiment convaincu... C\'est cher ces trucs-là non?',
     resistance: 'You think it is too expensive and you are too busy with work. You also prefer outdoor activities.',
-    whisperHint: `Conversation entre amis. Abonnement, salle de sport, gym, musculation, fitness, c'est cher, pas le temps, activité physique, randonnée, persuader, convaincre.`,
+    whisperHint: `Conversation informelle entre amis en français. Tu devrais venir, ça te ferait du bien, on y va ensemble, essayer, s'inscrire, la salle, la gym, musculation, cardio, fitness, entraînement, abonnement, mensuel, c'est cher, trop cher, j'ai pas le temps, je suis occupé, je préfère dehors, la nature, la randonnée, marcher dehors, convaincre, persuader, allez, sérieux, une fois, essayer une semaine.`,
     closingTimeout: 'Ah excuse-moi, j\'ai un autre appel qui arrive. On en reparle plus tard, promis!',
     closingUserEnded: 'Ok ok, tu m\'as convaincu de réfléchir. À plus tard!',
   },

@@ -4,6 +4,7 @@ import { textToSpeech } from './tts.service.js';
 import { getExaminerResponse, streamExaminerSentences, type Turn } from './examiner.service.js';
 import { evaluateConversation } from './evaluator.service.js';
 import { resultRepository } from '../repositories/result.repository.js';
+import type { DeliverySnapshot } from './delivery-metrics.js';
 
 // Re-export Turn so the controller can use it without importing from examiner directly.
 export type { Turn };
@@ -26,6 +27,8 @@ export type TurnResult = {
   examinerText: string;
   examinerAudio: Buffer;
   skipped: boolean;   // true when Whisper returned empty audio — frontend restarts listening
+  /** Present when not skipped — Whisper timed metrics for grading. */
+  delivery?: DeliverySnapshot;
 };
 
 // What the controller gets back from finishAttempt()
@@ -99,13 +102,15 @@ export async function processTurn(
   // Step 2: transcribe what the candidate said.
   // Pass the scenario's whisperHint to prime Whisper with domain vocabulary.
   // Returns null if the audio was silent or too short to be meaningful.
-  const transcript = await transcribeAudio(audioFilePath, scenario.whisperHint);
+  const transcription = await transcribeAudio(audioFilePath, scenario.whisperHint);
 
   // If Whisper got nothing useful, skip the Claude call entirely.
   // The controller will tell the frontend to restart listening without adding to history.
-  if (!transcript) {
+  if (!transcription) {
     return { transcript: '', examinerText: '', examinerAudio: Buffer.alloc(0), skipped: true };
   }
+
+  const { text: transcript, delivery } = transcription;
 
   // Step 3: append the candidate's turn to history, then ask Claude for the next examiner line
   const updatedHistory: Turn[] = [
@@ -117,7 +122,7 @@ export async function processTurn(
   // Step 4: convert the examiner's response to audio
   const examinerAudio = await textToSpeech(examinerText);
 
-  return { transcript, examinerText, examinerAudio, skipped: false };
+  return { transcript, examinerText, examinerAudio, skipped: false, delivery };
 }
 
 /**
@@ -129,7 +134,7 @@ export async function processTurn(
  */
 export type StreamTurnEvent =
   | { type: 'skipped' }                                      // Whisper returned nothing meaningful
-  | { type: 'transcript'; text: string }                     // candidate's transcribed speech
+  | { type: 'transcript'; text: string; delivery: DeliverySnapshot }
   | { type: 'audio'; sentenceText: string; base64: string }  // one TTS sentence chunk
   | { type: 'done' };                                        // stream finished
 
@@ -156,13 +161,14 @@ export async function* streamTurn(
   if (!scenario) throw new Error(`Unknown scenarioId: ${scenarioId}`);
 
   // Step 1: transcribe — we must have the full transcript before Claude can respond
-  const transcript = await transcribeAudio(audioFilePath, scenario.whisperHint);
-  if (!transcript) {
+  const transcription = await transcribeAudio(audioFilePath, scenario.whisperHint);
+  if (!transcription) {
     yield { type: 'skipped' };
     return;
   }
+  const { text: transcript, delivery } = transcription;
   // Emit immediately so the frontend can update the transcript UI right away
-  yield { type: 'transcript', text: transcript };
+  yield { type: 'transcript', text: transcript, delivery };
 
   // Step 2 + 3 interleaved: stream Claude sentence by sentence, TTS each one immediately.
   // updatedHistory includes the candidate's latest turn so Claude has full context.
@@ -199,6 +205,7 @@ export async function finishAttempt(
   sections: Section[],
   scenarioId: string,
   reason: 'timeout' | 'user_terminated',
+  candidateDelivery: DeliverySnapshot[] = [],
 ): Promise<FinishResult> {
   // Pick closing line based on how the exam ended
   const allScenarios = [...SECTION_A_SCENARIOS, ...SECTION_B_SCENARIOS];
@@ -213,10 +220,10 @@ export async function finishAttempt(
   // LEARN: Promise.all fires both async calls simultaneously, reducing total wait time
   const [closingAudio, evaluation] = await Promise.all([
     textToSpeech(closingText),
-    evaluateConversation(history, sections, reason),
+    evaluateConversation(history, sections, reason, candidateDelivery),
   ]);
 
-  // Save only the final scores to the DB — raw conversation is discarded
+  // Save final scores + optional delivery log (same order as candidate turns).
   await resultRepository.create({
     userId,
     sections: sections.join('+'),
@@ -231,6 +238,7 @@ export async function finishAttempt(
     feedback: evaluation.feedback,
     suggestions: evaluation.suggestions,
     reason,
+    ...(candidateDelivery.length > 0 ? { deliverySummary: candidateDelivery } : {}),
   });
 
   return { closingText, closingAudio, evaluation };

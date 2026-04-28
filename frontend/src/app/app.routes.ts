@@ -11,6 +11,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard),
   },
   {
+    path: 'results',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/results-list/results-list').then(m => m.ResultsList),
+  },
+  {
     path: 'exam/select',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/section-select/section-select').then(m => m.SectionSelect),

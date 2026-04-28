@@ -1,117 +1,93 @@
-<div class="result-detail">
-  <div class="result-detail__inner">
-
-    <a class="result-back" routerLink="/dashboard">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<div class="analytics-page">
+  <header class="analytics-page__header">
+    <a class="analytics-back" routerLink="/results">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
       </svg>
-      Back to Dashboard
+      All results
     </a>
+    <div class="analytics-page__headline">
+      <p class="analytics-page__eyebrow">Exam analytics</p>
+      <h1 class="analytics-page__title">Speaking evaluation</h1>
+      <p class="analytics-page__subtitle">Visual breakdown of your rubric scores and examiner feedback.</p>
+    </div>
+  </header>
 
-    @if (loading()) {
-      <div class="result-loading">
-        <span class="spinner spinner--accent spinner--lg"></span>
+  @if (loading()) {
+    <div class="analytics-state analytics-state--center">
+      <span class="spinner spinner--accent spinner--lg"></span>
+      <p>Loading result…</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="analytics-state analytics-state--error">{{ error() }}</div>
+  }
+
+  @if (result(); as r) {
+    @let isHigh = r.overallScore >= 4;
+    @let isMid = r.overallScore >= 3 && r.overallScore < 4;
+
+    <section class="analytics-hero">
+      <div class="summary-card">
+        <div class="summary-card__row">
+          <div class="summary-card__cefr-cluster">
+            @if (r.cefrLevel) {
+              <div class="summary-card__cefr"
+                [class.summary-card__cefr--a]="r.cefrLevel === 'A1' || r.cefrLevel === 'A2'"
+                [class.summary-card__cefr--b]="r.cefrLevel === 'B1' || r.cefrLevel === 'B2'"
+                [class.summary-card__cefr--c]="r.cefrLevel === 'C1' || r.cefrLevel === 'C2'"
+              >{{ r.cefrLevel }}</div>
+              <p class="summary-card__cefr-note">CEFR estimate (oral)</p>
+            }
+          </div>
+          <div class="summary-card__score"
+            [class.summary-card__score--high]="isHigh"
+            [class.summary-card__score--mid]="isMid"
+            [class.summary-card__score--low]="!isHigh && !isMid"
+          >
+            <span class="summary-card__score-val">{{ r.overallScore | number:'1.1-1' }}</span>
+            <span class="summary-card__score-max">/ 5 overall</span>
+          </div>
+        </div>
+        <dl class="summary-card__meta">
+          <div><dt>Section</dt><dd>{{ r.sections }}</dd></div>
+          <div><dt>Date</dt><dd>{{ r.completedAt | date:'medium' }}</dd></div>
+          <div><dt>End</dt><dd>{{ r.reason === 'timeout' ? 'Full duration' : 'Early exit' }}</dd></div>
+        </dl>
       </div>
-    }
+    </section>
 
-    @if (error()) {
-      <div class="result-error-msg">{{ error() }}</div>
-    }
-
-    @if (result(); as r) {
-
-      @let isHigh = r.overallScore >= 4;
-      @let isMid  = r.overallScore >= 3 && r.overallScore < 4;
-
-      <!-- Score hero -->
-      <div class="result-hero">
-        <p class="result-hero__eyebrow">Your French Level</p>
-
-        <!-- CEFR badge — the primary result (null for results taken before this feature) -->
-        @if (r.cefrLevel) {
-          <div class="cefr-badge"
-            [class.cefr-badge--a]="r.cefrLevel === 'A1' || r.cefrLevel === 'A2'"
-            [class.cefr-badge--b]="r.cefrLevel === 'B1' || r.cefrLevel === 'B2'"
-            [class.cefr-badge--c]="r.cefrLevel === 'C1' || r.cefrLevel === 'C2'"
-          >{{ r.cefrLevel }}</div>
-
-          <p class="cefr-label">
-            @if (r.cefrLevel === 'A1') { Débutant — niveau de base }
-            @else if (r.cefrLevel === 'A2') { Élémentaire — survie en contexte simple }
-            @else if (r.cefrLevel === 'B1') { Intermédiaire — autonome au quotidien }
-            @else if (r.cefrLevel === 'B2') { Intermédiaire supérieur — à l'aise et spontané }
-            @else if (r.cefrLevel === 'C1') { Avancé — fluide et précis }
-            @else if (r.cefrLevel === 'C2') { Maîtrise — niveau quasi-natif }
-          </p>
+    <section class="analytics-charts" aria-label="Score charts">
+      <article class="panel panel--radar">
+        <h2 class="panel__title">Skill profile</h2>
+        <p class="panel__hint">Radar shows balance across the four oral criteria (scale 0–5).</p>
+        @if (chartDimensions().length) {
+          <app-score-radar-chart [dimensions]="chartDimensions()" />
         }
+      </article>
+      <article class="panel panel--bars">
+        <h2 class="panel__title">Dimension comparison</h2>
+        <p class="panel__hint">Horizontal bars make small gaps between skills easy to spot.</p>
+        @if (chartDimensions().length) {
+          <app-score-bar-chart [dimensions]="chartDimensions()" />
+        }
+      </article>
+    </section>
 
-        <!-- Numeric score as secondary info -->
-        <div class="result-hero__ring"
-          [class.result-hero__ring--high]="isHigh"
-          [class.result-hero__ring--mid]="isMid"
-          [class.result-hero__ring--low]="!isHigh && !isMid"
-        >
-          <span class="ring-score"
-            [class.ring-score--high]="isHigh"
-            [class.ring-score--mid]="isMid"
-            [class.ring-score--low]="!isHigh && !isMid"
-          >{{ r.overallScore | number:'1.1-1' }}</span>
-          <span class="ring-denom">out of 5</span>
-        </div>
+    <section class="analytics-prose">
+      <article class="prose-card">
+        <h2 class="prose-card__title">Feedback</h2>
+        <p class="prose-card__body">{{ r.feedback }}</p>
+      </article>
+      <article class="prose-card">
+        <h2 class="prose-card__title">Suggestions</h2>
+        <p class="prose-card__body">{{ r.suggestions }}</p>
+      </article>
+    </section>
 
-        <p class="result-hero__meta">
-          Section {{ r.sections }}
-          <span class="meta-sep">·</span>
-          {{ r.completedAt | date:'medium' }}
-        </p>
-      </div>
-
-      <!-- Score breakdown -->
-      <div class="result-section">
-        <h2 class="result-section__title">Score Breakdown</h2>
-        <div class="score-rows">
-          @for (row of scoreRows; track row.label) {
-            @let rowHigh = row.score >= 4;
-            @let rowMid  = row.score >= 3 && row.score < 4;
-
-            <div>
-              <div class="score-row__head">
-                <span class="score-row__name">{{ row.label }}</span>
-                <span class="score-row__val"
-                  [class.score-row__val--high]="rowHigh"
-                  [class.score-row__val--mid]="rowMid"
-                  [class.score-row__val--low]="!rowHigh && !rowMid"
-                >{{ row.score | number:'1.1-1' }} / 5</span>
-              </div>
-              <div class="score-bar-track">
-                <div class="score-bar-fill"
-                  [class.score-bar-fill--high]="rowHigh"
-                  [class.score-bar-fill--mid]="rowMid"
-                  [class.score-bar-fill--low]="!rowHigh && !rowMid"
-                  [style.width.%]="(row.score / 5) * 100"
-                ></div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-
-      <!-- Feedback -->
-      <div class="result-section">
-        <h2 class="result-section__title">Feedback</h2>
-        <p class="result-text">{{ r.feedback }}</p>
-      </div>
-
-      <!-- Suggestions -->
-      <div class="result-section">
-        <h2 class="result-section__title">Suggestions</h2>
-        <p class="result-text">{{ r.suggestions }}</p>
-      </div>
-
-      <div class="result-cta">
-        <a routerLink="/exam/select" class="btn btn--primary btn--lg">Try Again</a>
-      </div>
-
-    }
-  </div>
+    <footer class="analytics-footer">
+      <a routerLink="/exam/select" class="btn btn--primary btn--lg">New exam</a>
+    </footer>
+  }
 </div>

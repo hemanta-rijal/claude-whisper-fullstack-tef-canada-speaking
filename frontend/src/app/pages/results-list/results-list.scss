@@ -1,0 +1,28 @@
+@use '../dashboard/dashboard.scss' as *;
+
+.dash-nav__brand--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.92;
+  }
+}
+
+.results-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  padding: 20px 0 8px;
+
+  &__status {
+    font-size: 13px;
+    color: #64748b;
+    min-width: 108px;
+    text-align: center;
+  }
+}

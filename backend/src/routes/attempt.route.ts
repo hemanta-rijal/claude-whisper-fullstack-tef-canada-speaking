@@ -9,7 +9,8 @@ import {
   processTurnController,
   streamTurnController,
   finishAttemptController,
-  getResultsController,
+  getRecentResultsController,
+  getResultsPagedController,
   getResultByIdController,
 } from '../controllers/attempt.controller.js';
 
@@ -47,6 +48,7 @@ attemptRouter.post('/:id/turn-stream', upload.single('audio'), streamTurnControl
 
 attemptRouter.post('/:id/finish', validate(finishAttemptSchema), finishAttemptController);
 
-// Result routes — read-only, same auth
-attemptRouter.get('/results', getResultsController);
+// LEARN: register static paths before `/results/:id` so "recent" and "paged" are not parsed as ids.
+attemptRouter.get('/results/recent', getRecentResultsController);
+attemptRouter.get('/results/paged', getResultsPagedController);
 attemptRouter.get('/results/:id', getResultByIdController);

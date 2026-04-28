@@ -1,19 +1,22 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AttemptService } from '../../services/attempt';
+import { AttemptService, type DeliverySnapshot } from '../../services/attempt';
 import { environment } from '../../../environments/environment';
 
 type ExamState = 'idle' | 'listening' | 'processing' | 'ai-speaking' | 'evaluating' | 'done';
 type Turn = { role: 'examiner' | 'candidate'; content: string };
 
 const EXAM_DURATION_SECONDS = 5 * 60; // 5 minutes
-const SILENCE_THRESHOLD = 15;         // audio level below this = silence (0-255 scale)
-const SILENCE_DURATION_MS = 1200;     // 1.2s of silence triggers submission
+// LEARN: AnalyserNode returns 0–255-ish levels; lower = treat quieter mic input as "speech"
+// so soft-spoken or distant learners still get MIN_SPEECH_FRAMES without shouting.
+const SILENCE_THRESHOLD = 12;
+// Longer pause before auto-submit gives beginners time to finish a thought after a hesitation.
+const SILENCE_DURATION_MS = 1800;
 // Minimum consecutive frames above threshold to count as real speech.
-// Interval fires every 100ms, so 5 frames = 500ms of sustained sound.
-// This prevents a cough, breath, or background noise from triggering a submission
-// with nearly silent audio — which makes Whisper hallucinate English text.
-const MIN_SPEECH_FRAMES = 5;
+// Interval fires every 100ms, so 4 frames ≈ 400ms of sustained sound.
+// Slightly faster "speech confirmed" than 5 frames helps quiet speakers; SILENCE_DURATION_MS
+// carries most of the anti–false-submit weight.
+const MIN_SPEECH_FRAMES = 4;
 
 @Component({
   selector: 'app-exam',
@@ -39,6 +42,9 @@ export class Exam implements OnInit, OnDestroy {
 
   // Conversation history — sent to backend with every turn
   history: Turn[] = [];
+
+  // LEARN: One entry per successful candidate turn — Whisper timings for final grading (optional on backend).
+  private candidateDeliveryLog: DeliverySnapshot[] = [];
 
   // Internal audio/timer refs
   private timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -103,6 +109,7 @@ export class Exam implements OnInit, OnDestroy {
       this.attemptId.set(result.attemptId);
       this.scenarioId.set(result.scenarioId);
       this.scenarioImageUrl.set(`${environment.apiUrl}${result.scenarioImageUrl}`);
+      this.candidateDeliveryLog = [];
 
       // Store opening as first examiner turn
       this.history.push({ role: 'examiner', content: result.openingText });
@@ -250,6 +257,10 @@ export class Exam implements OnInit, OnDestroy {
           } else if (event.type === 'transcript') {
             // Candidate's speech is confirmed — add it to history immediately
             this.history.push({ role: 'candidate', content: event.data['text'] as string });
+            const d = event.data['delivery'] as DeliverySnapshot | undefined;
+            if (d && typeof d.durationSec === 'number') {
+              this.candidateDeliveryLog.push(d);
+            }
 
           } else if (event.type === 'audio') {
             // One sentence of audio arrived — queue it for playback.
@@ -379,6 +390,7 @@ export class Exam implements OnInit, OnDestroy {
         [this.section()],
         this.scenarioId(),
         reason,
+        this.candidateDeliveryLog,
       );
 
       // Only play the closing line when the timer expires naturally.
