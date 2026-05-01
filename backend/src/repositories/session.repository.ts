@@ -27,7 +27,14 @@ export const sessionRepository = {
   async revokeById(sessionId: string): Promise<void> {
     await prisma.session.update({
       where: { id: sessionId },
-      data: { revokedAt: new Date() },  // Prisma -> SQL-ish: UPDATE Session SET revokedAt=NOW() WHERE id=?
+      data: { revokedAt: new Date() },
+    });
+  },
+
+  async revokeAllForUser(userId: string): Promise<void> {
+    await prisma.session.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
     });
   },
 };

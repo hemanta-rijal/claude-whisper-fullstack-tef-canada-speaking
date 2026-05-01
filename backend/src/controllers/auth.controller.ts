@@ -8,9 +8,10 @@ import { AppError } from '../lib/errors.js';
 const SESSION_COOKIE = 'sid';
 
 const COOKIE_OPTIONS = {
-  httpOnly: true,   // JS in the browser cannot read this cookie (protects against XSS token theft)
-  secure: process.env.NODE_ENV === 'production', // HTTPS only in production; plain HTTP ok in dev
-  sameSite: 'lax' as const,  // Prevents most CSRF attacks; 'strict' is stronger but breaks OAuth redirects
+  httpOnly: true,
+  // Set COOKIE_SECURE=true in production with HTTPS. Defaults to false so HTTP (e.g. Docker Compose) works.
+  secure: process.env.COOKIE_SECURE === 'true',
+  sameSite: 'lax' as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: '/',
 };
@@ -62,6 +63,31 @@ export async function registerController(req: Request, res: Response): Promise<v
     const result = await authService.registerWithPassword({ email, name, password });
     res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
     res.status(201).json({ ok: true, userId: result.userId });
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+}
+
+export async function forgotPasswordController(req: Request, res: Response): Promise<void> {
+  const { email } = req.body as { email: string };
+  try {
+    await authService.forgotPassword(email);
+    // Always 200 — never reveal whether the email exists.
+    res.status(200).json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+export async function resetPasswordController(req: Request, res: Response): Promise<void> {
+  const { token, password } = req.body as { token: string; password: string };
+  try {
+    await authService.resetPassword(token, password);
+    res.status(200).json({ ok: true });
   } catch (err) {
     if (err instanceof AppError) {
       res.status(err.statusCode).json({ error: err.message });

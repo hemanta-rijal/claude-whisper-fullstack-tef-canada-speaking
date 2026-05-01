@@ -38,7 +38,6 @@ void prisma
     });
   })
   .catch((err: unknown) => {
-    // TODO: make this a nicer error message for beginners (include common failure modes / SSL flags).
-    console.error('Failed to connect to MySQL via Prisma', err);
+    console.error('Failed to connect to database via Prisma:', err);
     process.exit(1);
   });

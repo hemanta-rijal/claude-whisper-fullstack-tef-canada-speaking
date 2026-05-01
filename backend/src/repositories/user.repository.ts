@@ -19,12 +19,18 @@ export const userRepository = {
   },
 
   async createUser(input: { email: string; name?: string; passwordHash: string }): Promise<{ id: string }> {
-    // Prisma -> SQL-ish: INSERT INTO User (email, name, passwordHash) VALUES (?, ?, ?);
     return prisma.user.create({
       data: input,
-      select: { id: true }, // only return the id — service needs it to create a session
+      select: { id: true },
     });
-  }
+  },
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+  },
 };
 
 

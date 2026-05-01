@@ -1,5 +1,5 @@
 # ── Stage 1: build ──────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage 2: production ──────────────────────────────────────────────────────
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 
 ENV NODE_ENV=production
 
@@ -25,12 +25,16 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install only production dependencies
+# prisma is in dependencies so migrate deploy works without devDeps
 RUN npm ci --omit=dev && npx prisma generate
 
 # Copy compiled output from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy and prepare the entrypoint script
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 EXPOSE 3000
 
-CMD ["node", "dist/src/index.js"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

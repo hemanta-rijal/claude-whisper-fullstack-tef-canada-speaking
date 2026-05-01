@@ -42,8 +42,8 @@ jobs:
         run: npm run lint --if-present
 
       - name: Run tests
-        run: npx ng test --no-watch
-        # --no-watch exits after test suite finishes (non-interactive CI mode)
+        # ChromeHeadless is pre-installed on ubuntu-latest runners
+        run: npx ng test --no-watch --no-progress --browsers=ChromeHeadless
 
       - name: Build (production)
         run: npm run build
@@ -98,7 +98,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ── CD: deploy (customize for your platform) ─────────────────────────────
+  # ── CD: deploy ────────────────────────────────────────────────────────────
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -110,9 +110,8 @@ jobs:
       - name: Deploy to server via SSH
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-        # Prerequisites:
-        #   1. Add SSH_PRIVATE_KEY, SSH_HOST, SSH_USER, SSH_PORT as repository secrets.
-        #   2. Replace port/path values to match your server setup.
+        # Prerequisites (add as repository secrets):
+        #   SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, SSH_PORT
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -122,6 +121,12 @@ jobs:
           envs: IMAGE
           script: |
             docker pull "$IMAGE"
-            docker stop frontend || true
-            docker rm frontend || true
-            docker run -d --name frontend --restart unless-stopped -p 8080:80 "$IMAGE"
+
+            # Same network as the backend so nginx can proxy to http://backend:3000
+            docker network create app 2>/dev/null || true
+
+            docker rm -f frontend 2>/dev/null || true
+            docker run -d --name frontend --restart unless-stopped \
+              --network app \
+              -p 80:80 \
+              "$IMAGE"

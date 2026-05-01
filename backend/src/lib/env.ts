@@ -7,11 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageRoot = path.join(__dirname, '..', '..');
 
-
 export type AppEnv = {
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   databaseUrl: string;
+  // API keys are validated lazily when a feature is first called, not at startup.
+  // This lets the server boot and serve health checks even if a key is missing.
   openAiApiKey: string;
   anthropicApiKey: string;
 };
@@ -39,19 +40,33 @@ function parseNodeEnv(raw: string | undefined): AppEnv['nodeEnv'] {
 
 function parseDatabaseUrl(raw: string | undefined): string {
   if (raw === undefined || raw.trim() === '') {
-    throw new Error('Missing DATABASE_URL (expected a MySQL connection string like mysql://...)');
+    throw new Error('Missing DATABASE_URL');
   }
-
-  if (!raw.startsWith('mysql://') && !raw.startsWith('mysql2://')) {
-    throw new Error(`Invalid DATABASE_URL: must start with mysql:// or mysql2:// (got: "${raw.slice(0, 20)}...")`);
+  if (!raw.startsWith('postgresql://') && !raw.startsWith('postgres://') &&
+      !raw.startsWith('mysql://') && !raw.startsWith('mysql2://')) {
+    throw new Error(`Invalid DATABASE_URL scheme (got: "${raw.slice(0, 20)}...")`);
   }
   return raw;
 }
 
-function requireEnv(key: string): string {
+// Reads an env var at startup — warns if missing but does NOT throw.
+// Services that need the key must call requireApiKey() at call-time.
+function readApiKey(key: string): string {
   const val = process.env[key];
-  if (!val || val.trim() === '' || val === `your-${key.toLowerCase().replace(/_/g, '-')}-here`) {
-    throw new Error(`Missing or placeholder value for ${key} in .env`);
+  if (!val || val.trim() === '') {
+    console.warn(`[env] WARNING: ${key} is not set. Features that use it will fail at runtime.`);
+    return '';
+  }
+  return val;
+}
+
+// Call this inside a service function, not at module load time.
+// Throws with a clear message so the HTTP handler can return 503.
+export function requireApiKey(key: 'openAiApiKey' | 'anthropicApiKey'): string {
+  const envKey = key === 'openAiApiKey' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY';
+  const val = process.env[envKey];
+  if (!val || val.trim() === '') {
+    throw new Error(`${envKey} is not configured. Set it in .env and restart.`);
   }
   return val;
 }
@@ -61,7 +76,7 @@ export function getEnv(): AppEnv {
     nodeEnv: parseNodeEnv(process.env.NODE_ENV),
     port: parsePort(process.env.PORT, 3000),
     databaseUrl: parseDatabaseUrl(process.env.DATABASE_URL),
-    openAiApiKey: requireEnv('OPENAI_API_KEY'),
-    anthropicApiKey: requireEnv('ANTHROPIC_API_KEY'),
+    openAiApiKey: readApiKey('OPENAI_API_KEY'),
+    anthropicApiKey: readApiKey('ANTHROPIC_API_KEY'),
   };
 }

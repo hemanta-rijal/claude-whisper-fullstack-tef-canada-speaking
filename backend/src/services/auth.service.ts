@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { userRepository } from '../repositories/user.repository.js';
 import { sessionRepository } from '../repositories/session.repository.js';
+import { passwordResetRepository } from '../repositories/password-reset.repository.js';
+import { emailService } from './email.service.js';
 import { AppError } from '../lib/errors.js';
 
 // Service layer: business logic (no Express req/res here).
@@ -44,9 +46,31 @@ export const authService = {
 
     const session = await sessionRepository.createForUser(newUser.id);
     return { userId: newUser.id, sessionId: session.id };
-  }
+  },
 
+  async forgotPassword(email: string): Promise<void> {
+    const appUrl = process.env.APP_URL ?? 'http://localhost:4200';
+    const user = await userRepository.findByEmail(email);
 
+    // Always respond success — never reveal whether the email exists.
+    if (!user) return;
+
+    const rawToken = await passwordResetRepository.createToken(user.id);
+    const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
+    await emailService.sendPasswordReset(email, resetUrl);
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const record = await passwordResetRepository.findValidToken(token);
+    if (!record) {
+      throw new AppError(400, 'Invalid or expired reset link');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await userRepository.updatePassword(record.userId, passwordHash);
+    await passwordResetRepository.markUsed(record.id);
+    await sessionRepository.revokeAllForUser(record.userId);
+  },
 };
 
 export type RegisterInput = {
