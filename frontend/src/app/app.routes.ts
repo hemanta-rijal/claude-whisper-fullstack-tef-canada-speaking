@@ -17,6 +17,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/flashcards/flashcards').then(m => m.Flashcards),
   },
+  
   {
     path: 'settings',
     canActivate: [authGuard],
