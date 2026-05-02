@@ -157,6 +157,6 @@ jobs:
             # so migrations are always applied on container startup — no separate step needed.
             docker rm -f backend 2>/dev/null || true
             docker run -d --name backend --restart unless-stopped \
-              --network app \
+              --network host \
               $ENV_FILE_ARG \
               "$IMAGE"
