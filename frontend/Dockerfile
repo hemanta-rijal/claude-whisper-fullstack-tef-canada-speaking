@@ -1,3 +1,18 @@
+# ── Stage 0: development (ng serve with hot-reload) ─────────────────────────
+FROM node:22-alpine AS development
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+EXPOSE 4200
+
+CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--proxy-config", "proxy.conf.json"]
+
 # ── Stage 1: build ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
 

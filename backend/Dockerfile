@@ -1,3 +1,21 @@
+# ── Stage 0: development (hot-reload via tsx watch) ─────────────────────────
+FROM node:22-alpine AS development
+
+ENV NODE_ENV=development
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY prisma ./prisma/
+
+RUN npm ci && npx prisma generate
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
 # ── Stage 1: build ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
 
