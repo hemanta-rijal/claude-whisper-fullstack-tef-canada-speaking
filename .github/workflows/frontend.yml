@@ -127,5 +127,5 @@ jobs:
             docker rm -f frontend 2>/dev/null || true
             docker run -d --name frontend --restart unless-stopped \
               --network app \
-              -p 80:80 \
+              -p 8080:80 \
               "$IMAGE"
