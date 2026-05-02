@@ -1,57 +1,26 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Section Select Page
-// ─────────────────────────────────────────────────────────────────────────────
+// Section select — colours follow global CSS variables so light/dark themes stay readable.
+// LEARN: ThemeService sets html[data-theme]; :root / html[data-theme='light'] in styles.scss define --text, --bg-surface, etc.
 
-$accent:     #6366f1;
-$accent-lt:  #818cf8;
-$violet:     #7c3aed;
-$violet-lt:  #a78bfa;
-$bg-base:    #020617;
-$bg-surface: #0f172a;
-$bg-elevated:#1e293b;
-$border:     #1e293b;
-$border-mid: #334155;
-$text:       #f1f5f9;
-$text-sub:   #94a3b8;
-$text-muted: #64748b;
+$accent: #6366f1;
+$accent-lt: #818cf8;
+$violet: #7c3aed;
+$violet-lt: #a78bfa;
 
-// ── Layout ───────────────────────────────────────────────────────────────────
-
-.section-select {
+// Same shell layout as dashboard / exam — shared header sits above this region.
+.dash-app {
   min-height: 100vh;
-  background: $bg-base;
   display: flex;
   flex-direction: column;
 }
 
-// ── Navbar ───────────────────────────────────────────────────────────────────
-
-.section-select-nav {
+.section-select {
+  flex: 1;
+  min-height: 0;
+  background: var(--bg-base);
+  color: var(--text);
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 24px;
-  border-bottom: 1px solid $border;
-
-  @media (min-width: 768px) { padding: 14px 40px; }
-
-  a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: $text-muted;
-    text-decoration: none;
-    transition: color 150ms ease;
-    &:hover { color: $text; }
-  }
-
-  .nav-dot { color: $border-mid; font-size: 12px; }
-
-  h1 { font-size: 14px; font-weight: 600; color: $text; }
+  flex-direction: column;
 }
-
-// ── Body ─────────────────────────────────────────────────────────────────────
 
 .section-select-body {
   flex: 1;
@@ -73,17 +42,20 @@ $text-muted: #64748b;
   h2 {
     font-size: 28px;
     font-weight: 700;
-    color: $text;
+    color: var(--text);
     letter-spacing: -0.02em;
     margin-bottom: 8px;
 
-    @media (min-width: 640px) { font-size: 32px; }
+    @media (min-width: 640px) {
+      font-size: 32px;
+    }
   }
 
-  p { font-size: 14px; color: $text-sub; }
+  p {
+    font-size: 14px;
+    color: var(--text-sub);
+  }
 }
-
-// ── Section cards ─────────────────────────────────────────────────────────────
 
 .section-cards {
   display: grid;
@@ -91,7 +63,9 @@ $text-muted: #64748b;
   gap: 16px;
   margin-bottom: 36px;
 
-  @media (min-width: 560px) { grid-template-columns: 1fr 1fr; }
+  @media (min-width: 560px) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .section-card {
@@ -99,25 +73,31 @@ $text-muted: #64748b;
   text-align: left;
   padding: 24px;
   border-radius: 20px;
-  border: 2px solid $border-mid;
-  background: $bg-surface;
+  border: 2px solid var(--border-mid);
+  background: var(--bg-surface);
+  color: var(--text);
   cursor: pointer;
-  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease;
   width: 100%;
 
-  &:hover { border-color: $border-mid; background: $bg-elevated; }
+  &:hover {
+    border-color: var(--border-mid);
+    background: var(--bg-elevated);
+  }
 
-  // Selected states
   &--a-selected {
     border-color: $accent;
-    background: rgba(99,102,241,0.06);
-    box-shadow: 0 0 0 4px rgba(99,102,241,0.08);
+    background: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
   }
 
   &--b-selected {
     border-color: $violet;
-    background: rgba(124,58,237,0.06);
-    box-shadow: 0 0 0 4px rgba(124,58,237,0.08);
+    background: rgba(124, 58, 237, 0.08);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
   }
 }
 
@@ -138,15 +118,25 @@ $text-muted: #64748b;
   border: 1px solid;
 
   &--a {
-    background: rgba(99,102,241,0.12);
-    border-color: rgba(99,102,241,0.25);
-    svg { color: $accent-lt; width: 20px; height: 20px; }
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.28);
+
+    svg {
+      color: $accent-lt;
+      width: 20px;
+      height: 20px;
+    }
   }
 
   &--b {
-    background: rgba(124,58,237,0.12);
-    border-color: rgba(124,58,237,0.25);
-    svg { color: $violet-lt; width: 20px; height: 20px; }
+    background: rgba(124, 58, 237, 0.12);
+    border-color: rgba(124, 58, 237, 0.28);
+
+    svg {
+      color: $violet-lt;
+      width: 20px;
+      height: 20px;
+    }
   }
 }
 
@@ -161,8 +151,13 @@ $text-muted: #64748b;
   color: #fff;
   font-weight: 700;
 
-  &--a { background: $accent; }
-  &--b { background: $violet; }
+  &--a {
+    background: $accent;
+  }
+
+  &--b {
+    background: $violet;
+  }
 }
 
 .section-card__tag {
@@ -172,20 +167,25 @@ $text-muted: #64748b;
   text-transform: uppercase;
   margin-bottom: 6px;
 
-  &--a { color: $accent-lt; }
-  &--b { color: $violet-lt; }
+  &--a {
+    color: $accent-lt;
+  }
+
+  &--b {
+    color: $violet-lt;
+  }
 }
 
 .section-card__title {
   font-size: 15px;
   font-weight: 700;
-  color: $text;
+  color: var(--text);
   margin-bottom: 10px;
 }
 
 .section-card__desc {
   font-size: 13px;
-  color: $text-sub;
+  color: var(--text-sub);
   line-height: 1.6;
   margin-bottom: 18px;
 }
@@ -194,18 +194,20 @@ $text-muted: #64748b;
   display: flex;
   gap: 16px;
   font-size: 12px;
-  color: $text-muted;
+  color: var(--text-muted);
 
   span {
     display: inline-flex;
     align-items: center;
     gap: 5px;
 
-    svg { width: 14px; height: 14px; }
+    svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
   }
 }
-
-// ── Start button area ─────────────────────────────────────────────────────────
 
 .section-select-cta {
   display: flex;
@@ -216,5 +218,5 @@ $text-muted: #64748b;
 
 .section-select-hint {
   font-size: 12px;
-  color: $text-muted;
+  color: var(--text-muted);
 }

@@ -1,0 +1,30 @@
+<section class="empty-state-card" role="status" aria-live="polite">
+  <div class="empty-state-card__glow" aria-hidden="true"></div>
+  <div class="empty-state-card__icon" aria-hidden="true">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.35" opacity="0.35" />
+      <path
+        d="M24 14v12l8 4"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.85"
+      />
+    </svg>
+  </div>
+  <h2 class="empty-state-card__title">{{ title() }}</h2>
+  <p class="empty-state-card__desc">{{ description() }}</p>
+  @if (primaryLink() || secondaryLink()) {
+    <div class="empty-state-card__actions">
+      @if (primaryLink(); as pl) {
+        <a [routerLink]="pl" class="btn btn--primary">{{ primaryLabel() }}</a>
+      }
+      @if (secondaryLink(); as sl) {
+        @if (secondaryLabel(); as slb) {
+          <a [routerLink]="sl" class="btn btn--ghost">{{ slb }}</a>
+        }
+      }
+    </div>
+  }
+</section>

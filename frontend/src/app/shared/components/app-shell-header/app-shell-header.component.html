@@ -1,0 +1,51 @@
+<nav class="dash-nav" aria-label="App">
+  <a routerLink="/dashboard" class="dash-nav__brand dash-nav__brand--link">
+    <div class="dash-nav__icon">
+      <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"
+        />
+      </svg>
+    </div>
+    <div class="dash-nav__titles">
+      <p class="dash-nav__name">TEF Canada</p>
+      <p class="dash-nav__tag">{{ tagline$ | async }}</p>
+    </div>
+  </a>
+  <div class="dash-nav__actions">
+    <div class="dash-nav__theme" role="group" aria-label="Theme">
+      <button
+        type="button"
+        class="dash-nav__theme-btn"
+        [class.dash-nav__theme-btn--active]="theme.preference() === 'light'"
+        (click)="theme.setTheme('light')"
+      >
+        Light
+      </button>
+      <button
+        type="button"
+        class="dash-nav__theme-btn"
+        [class.dash-nav__theme-btn--active]="theme.preference() === 'dark'"
+        (click)="theme.setTheme('dark')"
+      >
+        Dark
+      </button>
+    </div>
+    <span class="dash-nav__user">{{ auth.currentUser()?.name ?? auth.currentUser()?.email }}</span>
+    <a routerLink="/settings" class="dash-nav__settings">Settings</a>
+    <button type="button" class="dash-nav__out" (click)="logout()">Sign out</button>
+  </div>
+  <!-- RouterLinkActive highlights the item matching the current URL (exact on Overview so /dashboard alone matches). -->
+  <div class="dash-nav__menu" role="navigation" aria-label="Main sections">
+    <a
+      routerLink="/dashboard"
+      routerLinkActive="dash-nav__link--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="dash-nav__link"
+      >Overview</a
+    >
+    <a routerLink="/flashcards" routerLinkActive="dash-nav__link--active" class="dash-nav__link">Flashcards</a>
+    <a routerLink="/results" routerLinkActive="dash-nav__link--active" class="dash-nav__link">Results</a>
+    <a routerLink="/exam/select" routerLinkActive="dash-nav__link--active" class="dash-nav__link">New exam</a>
+  </div>
+</nav>

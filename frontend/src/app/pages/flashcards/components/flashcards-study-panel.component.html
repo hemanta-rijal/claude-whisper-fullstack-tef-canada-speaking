@@ -1,0 +1,75 @@
+<p class="flash-progress">{{ progressText() }}</p>
+
+@if (ttsError(); as err) {
+  <p class="flash-tts-error" role="alert">{{ err }}</p>
+}
+
+<div class="flash-audio-row">
+  <button
+    type="button"
+    class="flash-audio-btn btn btn--ghost btn--sm"
+    (click)="playFrench.emit()"
+    [disabled]="ttsLoading() !== null"
+    aria-label="Play French pronunciation"
+    title="Play French pronunciation (shortcut: F)"
+  >
+    @if (ttsLoading() === 'fr') {
+      <span class="flash-audio-row__busy">Loading…</span>
+    } @else {
+      <svg class="flash-audio-btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+        <path d="M15.54 8.46a5 5 0 010 7.07"/>
+        <path d="M19.07 4.93a10 10 0 010 14.14"/>
+      </svg>
+      <span>French</span>
+    }
+  </button>
+</div>
+
+<div class="flash-stage">
+  <button
+    type="button"
+    class="flash-card"
+    [class.flash-card--flipped]="flipped()"
+    (click)="flip.emit()"
+    [attr.aria-label]="flipped() ? 'Show French' : 'Show English'"
+  >
+    <div class="flash-card__inner">
+      <div class="flash-card__face flash-card__face--front">
+        <span class="flash-card__label">French</span>
+        <p class="flash-card__text">{{ card().fr }}</p>
+        @if (card().ipaFr) {
+          <p class="flash-card__ipa" lang="und">{{ card().ipaFr }}</p>
+        }
+        @if (card().hint && !flipped()) {
+          <span class="flash-card__hint">{{ card().hint }}</span>
+        }
+      </div>
+      <div class="flash-card__face flash-card__face--back">
+        <span class="flash-card__label">English</span>
+        <p class="flash-card__text">{{ card().en }}</p>
+        @if (card().ipaEn) {
+          <p class="flash-card__ipa" lang="und">{{ card().ipaEn }}</p>
+        }
+      </div>
+    </div>
+  </button>
+</div>
+
+<div class="flash-ratings" role="group" aria-label="How difficult was this card?">
+  <button type="button" class="flash-rate flash-rate--too-hard" (click)="rate.emit('too_hard')" title="See again very soon">Too difficult</button>
+  <button type="button" class="flash-rate flash-rate--hard" (click)="rate.emit('hard')" title="Review again soon">Difficult</button>
+  <button type="button" class="flash-rate flash-rate--ok" (click)="rate.emit('ok')" title="Normal spacing">OK</button>
+  <button type="button" class="flash-rate flash-rate--easy" (click)="rate.emit('easy')" title="Review later this round">Easy</button>
+  <button type="button" class="flash-rate flash-rate--too-easy" (click)="rate.emit('too_easy')" title="Mastered — hide until reset">Too easy</button>
+</div>
+
+<div class="flash-controls">
+  <button type="button" class="btn btn--ghost" (click)="prev.emit()" [disabled]="singleCard()">Previous</button>
+  <button type="button" class="btn btn--ghost" (click)="next.emit()" [disabled]="singleCard()">Next</button>
+</div>
+<p class="flash-controls__hint">Previous / Next skip ahead without changing spacing.</p>
+
+<p class="flash-hint-keys">
+  <kbd>F</kbd> French audio · <kbd>←</kbd><kbd>→</kbd> navigate · <kbd>Space</kbd> flip
+</p>

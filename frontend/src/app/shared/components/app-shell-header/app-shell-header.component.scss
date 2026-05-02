@@ -1,0 +1,243 @@
+// Mirrors former dashboard nav tokens — keeps one visual shell across Dashboard, Results, Flashcards, Exam.
+
+$stroke: rgba(148, 163, 184, 0.14);
+$text: #f8fafc;
+$muted: #94a3b8;
+$dim: #64748b;
+
+.dash-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 22px;
+  border-bottom: 1px solid $stroke;
+  backdrop-filter: blur(10px);
+
+  @media (min-width: 768px) {
+    padding: 16px 40px;
+  }
+
+  @media (min-width: 880px) {
+    flex-wrap: nowrap;
+    gap: 20px;
+  }
+}
+
+.dash-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  @media (min-width: 880px) {
+    order: 1;
+  }
+}
+
+.dash-nav__brand--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.92;
+  }
+}
+
+.dash-nav__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--accent-teal);
+  }
+}
+
+.dash-nav__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dash-nav__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.dash-nav__tag {
+  margin: 0;
+  font-size: 11px;
+  color: $dim;
+}
+
+.dash-nav__menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  flex-basis: 100%;
+  justify-content: flex-start;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+
+  @media (min-width: 880px) {
+    order: 2;
+    flex-basis: auto;
+    flex: 1;
+    justify-content: center;
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+.dash-nav__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: $muted;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $text;
+  }
+}
+
+.dash-nav__link--active {
+  color: var(--accent-teal);
+}
+
+.dash-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  @media (min-width: 880px) {
+    order: 3;
+    margin-left: 0;
+  }
+}
+
+// Compact appearance toggle — mirrors Settings so Exam/Dashboard can switch without leaving flow.
+.dash-nav__theme {
+  display: inline-flex;
+  border-radius: 10px;
+  padding: 3px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  gap: 3px;
+}
+
+.dash-nav__theme-btn {
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: var(--text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-bdr);
+    outline-offset: 1px;
+  }
+}
+
+.dash-nav__theme-btn--active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.dash-nav__user {
+  display: none;
+  font-size: 13px;
+  color: $muted;
+
+  @media (min-width: 640px) {
+    display: block;
+  }
+}
+
+.dash-nav__settings {
+  font-size: 13px;
+  font-weight: 600;
+  color: $muted;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--accent-teal);
+  }
+}
+
+.dash-nav__out {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $stroke;
+  color: $muted;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: $text;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+:host-context(html[data-theme='light']) {
+  .dash-nav__link {
+    color: #64748b;
+
+    &:hover {
+      color: #0f172a;
+    }
+  }
+
+  .dash-nav__link--active {
+    color: #0891b2;
+  }
+
+  .dash-nav__user,
+  .dash-nav__settings {
+    color: #475569;
+  }
+
+  .dash-nav__settings:hover {
+    color: #0891b2;
+  }
+
+  .dash-nav__out {
+    color: #475569;
+    border-color: rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.72);
+
+    &:hover {
+      color: #0f172a;
+      background: #fff;
+    }
+  }
+}

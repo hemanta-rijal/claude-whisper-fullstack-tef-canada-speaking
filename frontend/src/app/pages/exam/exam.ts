@@ -1,7 +1,10 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 import { AttemptService, type DeliverySnapshot } from '../../services/attempt';
 import { environment } from '../../../environments/environment';
+import { AppShellHeaderComponent } from '../../shared/components/app-shell-header/app-shell-header.component';
+import { shellActions } from '../../shared/state/shell/shell.actions';
 
 type ExamState = 'idle' | 'listening' | 'processing' | 'ai-speaking' | 'evaluating' | 'done';
 type Turn = { role: 'examiner' | 'candidate'; content: string };
@@ -18,14 +21,25 @@ const SILENCE_DURATION_MS = 1800;
 // carries most of the anti–false-submit weight.
 const MIN_SPEECH_FRAMES = 4;
 
+/** Build absolute URL for scenario images — handles `/assets/…` from API and avoids double slashes. */
+function resolveScenarioAssetUrl(pathOrUrl: string): string {
+  const raw = pathOrUrl.trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const base = environment.apiUrl.replace(/\/+$/, '');
+  const path = raw.startsWith('/') ? raw : `/${raw}`;
+  return `${base}${path}`;
+}
+
 @Component({
   selector: 'app-exam',
-  imports: [],
+  imports: [AppShellHeaderComponent],
   templateUrl: './exam.html',
   styleUrl: './exam.scss',
 })
 export class Exam implements OnInit, OnDestroy {
   private router = inject(Router);
+  private store = inject(Store);
   private attemptService = inject(AttemptService);
 
   // Exam metadata
@@ -33,6 +47,8 @@ export class Exam implements OnInit, OnDestroy {
   attemptId = signal('');
   scenarioId = signal('');
   scenarioImageUrl = signal('');
+  /** Set true when `<img>` fires `error` (404, blocked, etc.) so we show the placeholder. */
+  scenarioImageBroken = signal(false);
 
   // UI state
   state = signal<ExamState>('idle');
@@ -77,6 +93,9 @@ export class Exam implements OnInit, OnDestroy {
       return;
     }
     this.section.set(nav.section);
+    this.store.dispatch(
+      shellActions.brandTaglineSet({ tagline: `Exam · Section ${nav.section}` }),
+    );
 
     // Fetch the scenario preview immediately so the image is visible before
     // the user presses Start — no AI calls, responds in milliseconds.
@@ -87,10 +106,16 @@ export class Exam implements OnInit, OnDestroy {
     try {
       const preview = await this.attemptService.getScenarioPreview(section);
       this.scenarioId.set(preview.scenarioId);
-      this.scenarioImageUrl.set(`${environment.apiUrl}${preview.scenarioImageUrl}`);
+      this.scenarioImageBroken.set(false);
+      this.scenarioImageUrl.set(resolveScenarioAssetUrl(preview.scenarioImageUrl));
     } catch {
       // Non-fatal — the image just won't show until the exam starts
     }
+  }
+
+  /** Browser couldn't load scenario image (404, network, CSP). */
+  onScenarioImgError(): void {
+    this.scenarioImageBroken.set(true);
   }
 
   ngOnDestroy() {
@@ -108,7 +133,8 @@ export class Exam implements OnInit, OnDestroy {
       const result = await this.attemptService.startAttempt(this.section(), this.scenarioId());
       this.attemptId.set(result.attemptId);
       this.scenarioId.set(result.scenarioId);
-      this.scenarioImageUrl.set(`${environment.apiUrl}${result.scenarioImageUrl}`);
+      this.scenarioImageBroken.set(false);
+      this.scenarioImageUrl.set(resolveScenarioAssetUrl(result.scenarioImageUrl));
       this.candidateDeliveryLog = [];
 
       // Store opening as first examiner turn

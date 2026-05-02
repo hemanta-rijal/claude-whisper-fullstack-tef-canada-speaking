@@ -11,10 +11,10 @@ $bg-elevated: #1e293b;   // inputs, chips, hover states
 $border:      #1e293b;
 $border-mid:  #334155;
 
-// Text
-$text:        #f1f5f9;
-$text-sub:    #94a3b8;
-$text-muted:  #64748b;
+// Text (dark: bump secondary/muted for readability on charcoal backgrounds)
+$text:        #f8fafc;
+$text-sub:    #cbd5e1;
+$text-muted:  #94a3b8;
 
 // Accent (indigo)
 $accent:      #6366f1;
@@ -55,6 +55,68 @@ $bp-xl:  1280px;
 $t-fast:   150ms ease;
 $t-normal: 200ms ease;
 
+// ─── CSS variables (ThemeService sets html[data-theme="light"] | dark) ───────
+:root {
+  --bg-base: #{$bg-base};
+  --bg-surface: #{$bg-surface};
+  --bg-elevated: #{$bg-elevated};
+  --border: #{$border};
+  --border-mid: #{$border-mid};
+  --text: #{$text};
+  --text-sub: #{$text-sub};
+  --text-muted: #{$text-muted};
+  --accent: #{$accent};
+  --accent-lt: #{$accent-lt};
+  --accent-dk: #{$accent-dk};
+  --accent-bg: #{$accent-bg};
+  --accent-bdr: #{$accent-bdr};
+  --green-text: #{$green-text};
+  --yellow-text: #{$yellow-text};
+  --red-text: #{$red-text};
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-accent: #{$shadow-accent};
+  /* Surfaces shared by dashboard / results (theme overrides below). */
+  --accent-teal: #22d3ee;
+  --panel-bg: rgba(15, 23, 42, 0.72);
+  --panel-border: rgba(148, 163, 184, 0.14);
+  --insight-card-bg: rgba(15, 23, 42, 0.82);
+  --result-card-bg: rgba(15, 23, 42, 0.55);
+  --chip-bg: rgba(30, 41, 59, 0.92);
+  --pattern-dot: rgba(148, 163, 184, 0.22);
+}
+
+html[data-theme='light'] {
+  --bg-base: #e4eaf4;
+  --bg-surface: #ffffff;
+  --bg-elevated: #edf2fa;
+  --border: #cdd8e8;
+  --border-mid: #aebdcf;
+  --text: #081020;
+  --text-sub: #243548;
+  --text-muted: #455668;
+  --accent: #4338ca;
+  --accent-lt: #4f46e5;
+  --accent-dk: #3730a3;
+  --accent-bg: rgba(67, 56, 202, 0.1);
+  --accent-bdr: rgba(67, 56, 202, 0.28);
+  --accent-teal: #0f766e;
+  --green-text: #047857;
+  --yellow-text: #b45309;
+  --red-text: #b91c1c;
+  --shadow-sm: 0 1px 2px rgba(8, 16, 32, 0.06), 0 2px 10px rgba(67, 56, 202, 0.06);
+  --shadow-md: 0 4px 8px rgba(8, 16, 32, 0.06), 0 14px 34px rgba(8, 16, 32, 0.1);
+  --shadow-lg: 0 20px 48px rgba(8, 16, 32, 0.12);
+  --shadow-accent: 0 12px 32px rgba(67, 56, 202, 0.22), 0 4px 14px rgba(15, 118, 110, 0.12);
+  --panel-bg: var(--bg-surface);
+  --panel-border: var(--border-mid);
+  --insight-card-bg: var(--bg-surface);
+  --result-card-bg: var(--bg-surface);
+  --chip-bg: var(--bg-elevated);
+  --pattern-dot: rgba(36, 53, 72, 0.09);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Reset + Base
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,8 +135,8 @@ html {
 
 body {
   height: 100%;
-  background-color: $bg-base;
-  color: $text;
+  background-color: var(--bg-base);
+  color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
                'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
@@ -103,8 +165,8 @@ input, textarea, select {
 
 ::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: $border-mid; border-radius: $r-full; }
-::-webkit-scrollbar-thumb:hover { background: $text-muted; }
+::-webkit-scrollbar-thumb  { background: var(--border-mid); border-radius: $r-full; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Buttons
@@ -124,6 +186,11 @@ input, textarea, select {
               opacity $t-fast, box-shadow $t-fast;
   white-space: nowrap;
 
+  &:focus-visible {
+    outline: 2px solid var(--accent-lt);
+    outline-offset: 2px;
+  }
+
   &:disabled {
     opacity: 0.45;
     cursor: not-allowed;
@@ -137,22 +204,25 @@ input, textarea, select {
 
   // Variants
   &--primary {
-    background: $accent;
+    background: var(--accent);
     color: #fff;
-    box-shadow: $shadow-accent;
-    &:hover { background: $accent-lt; box-shadow: 0 8px 28px rgba(99,102,241,0.35); }
+    box-shadow: var(--shadow-accent);
+    &:hover {
+      background: var(--accent-lt);
+      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.35);
+    }
   }
 
   &--ghost {
     background: transparent;
-    color: $text-sub;
-    border-color: $border-mid;
-    &:hover { color: $text; background: $bg-elevated; }
+    color: var(--text-sub);
+    border-color: var(--border-mid);
+    &:hover { color: var(--text); background: var(--bg-elevated); }
   }
 
   &--danger {
     background: rgba(239,68,68,0.08);
-    color: $red-text;
+    color: var(--red-text);
     border-color: rgba(239,68,68,0.2);
     &:hover { background: rgba(239,68,68,0.15); }
   }
@@ -160,6 +230,19 @@ input, textarea, select {
   &--icon {
     padding: 8px;
     border-radius: $r-md;
+  }
+}
+
+// Richer primary buttons only in light theme — keeps dark UI unchanged.
+html[data-theme='light'] .btn.btn--primary {
+  background: linear-gradient(135deg, var(--accent-dk) 0%, var(--accent) 52%, #6366f1 100%);
+  box-shadow: var(--shadow-accent);
+
+  &:hover {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-lt) 52%, #818cf8 100%);
+    box-shadow:
+      0 12px 32px rgba(79, 70, 229, 0.38),
+      0 4px 14px rgba(6, 182, 212, 0.15);
   }
 }
 
@@ -178,25 +261,49 @@ input, textarea, select {
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: $text-sub;
+  color: var(--text-sub);
 }
 
 .form-input {
   width: 100%;
   padding: 13px 16px;
-  background: $bg-elevated;
-  border: 1px solid $border-mid;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
   border-radius: $r-lg;
-  color: $text;
+  color: var(--text);
   font-size: 14px;
   transition: border-color $t-fast, box-shadow $t-fast;
 
-  &::placeholder { color: $text-muted; }
+  &::placeholder { color: var(--text-muted); }
 
   &:focus {
     outline: none;
-    border-color: $accent;
+    border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+}
+
+/* Native selects — same chrome as .form-input for consistent forms across auth/settings. */
+.form-select {
+  width: 100%;
+  padding: 13px 40px 13px 16px;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  border-radius: $r-lg;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  transition: border-color $t-fast, box-shadow $t-fast;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
   }
 }
 
@@ -208,7 +315,7 @@ input, textarea, select {
   background: rgba(239,68,68,0.08);
   border: 1px solid rgba(239,68,68,0.2);
   border-radius: $r-lg;
-  color: $red-text;
+  color: var(--red-text);
   font-size: 13px;
 
   svg { flex-shrink: 0; margin-top: 1px; }
@@ -224,12 +331,12 @@ input, textarea, select {
     content: '';
     flex: 1;
     height: 1px;
-    background: $border;
+    background: var(--border);
   }
 
   span {
     font-size: 12px;
-    color: $text-muted;
+    color: var(--text-muted);
   }
 }
 
@@ -238,10 +345,24 @@ input, textarea, select {
 // ─────────────────────────────────────────────────────────────────────────────
 
 .card {
-  background: $bg-surface;
-  border: 1px solid $border;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-mid);
   border-radius: $r-2xl;
-  box-shadow: $shadow-sm;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Typography helper for text projected into `app-page-hero` (parent owns the nodes). */
+.page-hero-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-sub);
+  max-width: 46ch;
+
+  strong {
+    color: var(--text);
+    font-weight: 700;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -255,10 +376,10 @@ input, textarea, select {
   width: 40px;
   height: 40px;
   border-radius: $r-md;
-  background: $accent-bg;
-  border: 1px solid $accent-bdr;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bdr);
 
-  svg { color: $accent-lt; }
+  svg { color: var(--accent-lt); }
 
   &--lg {
     width: 52px;
@@ -271,13 +392,13 @@ input, textarea, select {
 // Score colours (used in dashboard + results)
 // ─────────────────────────────────────────────────────────────────────────────
 
-.score-high { color: $green-text; }
-.score-mid  { color: $yellow-text; }
-.score-low  { color: $red-text; }
+.score-high { color: var(--green-text); }
+.score-mid  { color: var(--yellow-text); }
+.score-low  { color: var(--red-text); }
 
 .score-bar-track {
   height: 8px;
-  background: $bg-elevated;
+  background: var(--bg-elevated);
   border-radius: $r-full;
   overflow: hidden;
 }
@@ -300,14 +421,14 @@ input, textarea, select {
   display: inline-block;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255,255,255,0.2);
-  border-top-color: #fff;
+  border: 2px solid rgba(148, 163, 184, 0.35);
+  border-top-color: var(--text);
   border-radius: $r-full;
   animation: spin 0.65s linear infinite;
 
   &--accent {
-    border-color: $border;
-    border-top-color: $accent;
+    border-color: var(--border-mid);
+    border-top-color: var(--accent);
     width: 36px;
     height: 36px;
     border-width: 3px;
@@ -341,4 +462,53 @@ input, textarea, select {
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+// ─── Shell pages use local SCSS colours — nudge them when global theme is light ─
+html[data-theme='light'] .dash-app {
+  background:
+    radial-gradient(920px 520px at 6% -14%, rgba(67, 56, 202, 0.2), transparent),
+    radial-gradient(720px 480px at 98% 6%, rgba(15, 118, 110, 0.14), transparent),
+    radial-gradient(640px 420px at 42% 108%, rgba(124, 58, 237, 0.11), transparent),
+    linear-gradient(168deg, #f7f9ff 0%, #e8ecf8 36%, #e5f4f7 70%, #f3f0ff 100%);
+  color: var(--text);
+}
+
+html[data-theme='light'] .flash-app {
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(67, 56, 202, 0.18), transparent),
+    radial-gradient(700px 440px at 92% 10%, rgba(15, 118, 110, 0.12), transparent),
+    radial-gradient(540px 380px at 48% 102%, rgba(124, 58, 237, 0.09), transparent),
+    linear-gradient(168deg, #f8f9ff 0%, #eaedf9 48%, #e8f6fa 100%);
+  color: var(--text);
+}
+
+/* Subtle dot grid — minimal encouragement without noise (opacity scales per theme). */
+.dash-app,
+.flash-app {
+  position: relative;
+  isolation: isolate;
+}
+
+.dash-app::after,
+.flash-app::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: radial-gradient(var(--pattern-dot) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+html[data-theme='light'] .dash-app::after,
+html[data-theme='light'] .flash-app::after {
+  opacity: 0.055;
+}
+
+.dash-app > *,
+.flash-app > * {
+  position: relative;
+  z-index: 1;
 }

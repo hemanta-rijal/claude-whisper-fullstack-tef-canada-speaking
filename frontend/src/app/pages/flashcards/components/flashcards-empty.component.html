@@ -1,0 +1,15 @@
+@if (variant() === 'track') {
+  <div class="flash-empty flash-empty--track">
+    <p class="flash-empty__title">No cards for {{ trackLabel() }}</p>
+    <p>
+      Add rows to <code class="flash-empty__code">tef-vocab-deck.ts</code> with
+      <code class="flash-empty__code">module: '{{ studyTrackKey() }}'</code>, or switch deck in the header.
+    </p>
+  </div>
+} @else {
+  <div class="flash-empty">
+    <p class="flash-empty__title">Nice work</p>
+    <p>You’ve cleared this round — shuffle again or reset saved progress to review everything.</p>
+    <button type="button" class="btn btn--primary" (click)="shuffleAgain.emit()">Shuffle again</button>
+  </div>
+}
