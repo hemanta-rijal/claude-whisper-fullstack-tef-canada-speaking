@@ -42,8 +42,7 @@ jobs:
         run: npm run lint --if-present
 
       - name: Run tests
-        # ChromeHeadless is pre-installed on ubuntu-latest runners
-        run: npx ng test --no-watch --no-progress --browsers=ChromeHeadless
+        run: npm test
 
       - name: Build (production)
         run: npm run build
