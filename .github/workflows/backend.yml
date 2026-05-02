@@ -144,7 +144,7 @@ jobs:
 
             # Resolve the env file that holds secrets (never commit this to git)
             ENV_FILE_ARG=""
-            for path in "$HOME/tef/.env" /etc/tef/.env; do
+            for path in "~/tef_backend/.env"; do
               if [ -f "$path" ]; then
                 ENV_FILE_ARG="--env-file $path"
                 break
