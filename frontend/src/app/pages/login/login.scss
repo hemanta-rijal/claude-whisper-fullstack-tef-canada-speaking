@@ -217,6 +217,20 @@ $text-muted: #64748b;
   gap: 20px;
 }
 
+.login-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-forgot-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: $accent-lt;
+  transition: color 150ms ease;
+  &:hover { color: #a5b4fc; }
+}
+
 .login-footer-link {
   text-align: center;
   font-size: 14px;

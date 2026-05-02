@@ -1,0 +1,27 @@
+<header class="page-hero">
+  <div class="page-hero__accent" aria-hidden="true">
+    <svg class="page-hero__spot" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="54" stroke="currentColor" stroke-width="1.25" opacity="0.22" />
+      <circle cx="60" cy="60" r="36" fill="currentColor" opacity="0.08" />
+      <path
+        d="M60 28v16M60 76v16M28 60h16M76 60h16"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        class="page-hero__spark"
+      />
+    </svg>
+  </div>
+
+  <div class="page-hero__main">
+    <p class="page-hero__eyebrow">{{ eyebrow() }}</p>
+    <h1 class="page-hero__title">{{ title() }}</h1>
+    <div class="page-hero__desc">
+      <ng-content select="[pageHeroDesc]" />
+    </div>
+  </div>
+
+  <div class="page-hero__actions">
+    <ng-content select="[pageHeroActions]" />
+  </div>
+</header>

@@ -1,0 +1,45 @@
+<header class="flash-hero">
+  <div class="flash-hero__head">
+    <div class="flash-hero__titles">
+      <p class="flash-hero__eyebrow">Practice</p>
+      <h2 class="flash-hero__title">Remember key phrases</h2>
+    </div>
+    <div class="flash-hero__deck" aria-label="Choose deck">
+      <span class="flash-hero__deck-label">Deck</span>
+      <div class="flash-track-toolbar__toggle flash-hero__deck-toggle" role="group" aria-label="Writing or speaking deck">
+        <button
+          type="button"
+          class="flash-track-btn"
+          [class.flash-track-btn--active]="studyTrack() === 'writing'"
+          (click)="trackChange.emit('writing')"
+          [attr.title]="moduleLabels()['writing']"
+        >
+          Writing
+        </button>
+        <button
+          type="button"
+          class="flash-track-btn"
+          [class.flash-track-btn--active]="studyTrack() === 'speaking'"
+          (click)="trackChange.emit('speaking')"
+          [attr.title]="moduleLabels()['speaking']"
+        >
+          Speaking
+        </button>
+      </div>
+      <span class="flash-hero__deck-hint">{{ moduleLabels()[studyTrack()] }}</span>
+    </div>
+  </div>
+
+  <div class="flash-hero__quick" aria-label="Deck shortcuts">
+    <button type="button" class="flash-hero__quick-btn" (click)="shuffle.emit()">Shuffle</button>
+    <span class="flash-hero__quick-sep" aria-hidden="true">·</span>
+    <button type="button" class="flash-hero__quick-btn" (click)="dueOrder.emit()">Due order</button>
+    <span class="flash-hero__quick-sep" aria-hidden="true">·</span>
+    <button type="button" class="flash-hero__quick-btn flash-hero__quick-btn--danger" (click)="resetProgress.emit()">Reset progress</button>
+  </div>
+
+  <p class="flash-hero__desc">
+    <kbd>Space</kbd> flips the card, then rate below. <kbd>F</kbd> plays <strong>French</strong> audio. Speaker uses cloud or browser (owner sets at build).
+    IPA when listed. <span class="flash-hero__mastered">{{ knownCount() }} mastered</span>.
+  </p>
+</header>

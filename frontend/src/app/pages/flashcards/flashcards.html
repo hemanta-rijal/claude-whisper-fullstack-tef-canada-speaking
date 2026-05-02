@@ -1,0 +1,35 @@
+<div class="flash-app">
+  <app-shell-header />
+
+  <main class="flash-main">
+    <app-flashcards-hero
+      [studyTrack]="studyTrack()"
+      [moduleLabels]="moduleLabels"
+      [knownCount]="knownCount()"
+      (trackChange)="selectTrack($event)"
+      (shuffle)="shuffleDeck()"
+      (dueOrder)="bootstrapQueue()"
+      (resetProgress)="resetProgress()"
+    />
+
+    @if (trackIsEmpty()) {
+      <app-flashcards-empty variant="track" [trackLabel]="moduleLabels[studyTrack()]" [studyTrackKey]="studyTrack()" />
+    } @else if (!currentCard()) {
+      <app-flashcards-empty variant="done" (shuffleAgain)="shuffleDeck()" />
+    } @else {
+      <app-flashcards-study-panel
+        [card]="currentCard()!"
+        [flipped]="flipped()"
+        [orderLength]="order().length"
+        [progressText]="progressText()"
+        [ttsError]="ttsError()"
+        [ttsLoading]="ttsLoading()"
+        (flip)="toggleFlip()"
+        (playFrench)="playLang('fr')"
+        (rate)="rate($event)"
+        (prev)="prev()"
+        (next)="next()"
+      />
+    }
+  </main>
+</div>

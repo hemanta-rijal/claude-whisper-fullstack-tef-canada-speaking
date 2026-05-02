@@ -1,109 +1,103 @@
-<div class="section-select">
+<div class="dash-app">
+  <app-shell-header />
 
-  <nav class="section-select-nav">
-    <a routerLink="/dashboard">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-      </svg>
-      Dashboard
-    </a>
-    <span class="nav-dot">·</span>
-    <h1>Choose section</h1>
-  </nav>
+  <div class="section-select">
+    <div class="section-select-body">
+      <div class="section-select-inner">
 
-  <div class="section-select-body">
-    <div class="section-select-inner">
+        <div class="section-select-head">
+          <h2>TEF Canada Speaking</h2>
+          <p>Select the section you want to practise today</p>
+        </div>
 
-      <div class="section-select-head">
-        <h2>TEF Canada Speaking</h2>
-        <p>Select the section you want to practise today</p>
-      </div>
+        <div class="section-cards">
 
-      <div class="section-cards">
-
-        <!-- Section A -->
-        <button
-          class="section-card"
-          [class.section-card--a-selected]="selected() === 'A'"
-          (click)="select('A')"
-        >
-          <div class="section-card__header">
-            <div class="section-card__icon section-card__icon--a">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-              </svg>
+          <!-- Section A -->
+          <button
+            type="button"
+            class="section-card"
+            [class.section-card--a-selected]="selected() === 'A'"
+            (click)="select('A')"
+          >
+            <div class="section-card__header">
+              <div class="section-card__icon section-card__icon--a">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+              </div>
+              @if (selected() === 'A') {
+                <div class="section-card__check section-card__check--a">✓</div>
+              }
             </div>
-            @if (selected() === 'A') {
-              <div class="section-card__check section-card__check--a">✓</div>
-            }
-          </div>
 
-          <p class="section-card__tag section-card__tag--a">Section A</p>
-          <p class="section-card__title">Telephone Roleplay</p>
-          <p class="section-card__desc">
-            A professional phone call simulation. You must complete a task — booking, enquiring, or making a complaint — in formal French.
-          </p>
-          <div class="section-card__meta">
-            <span>
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
-              </svg>
-              5 minutes
-            </span>
-            <span>Formal French</span>
-          </div>
-        </button>
-
-        <!-- Section B -->
-        <button
-          class="section-card"
-          [class.section-card--b-selected]="selected() === 'B'"
-          (click)="select('B')"
-        >
-          <div class="section-card__header">
-            <div class="section-card__icon section-card__icon--b">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-              </svg>
+            <p class="section-card__tag section-card__tag--a">Section A</p>
+            <p class="section-card__title">Telephone Roleplay</p>
+            <p class="section-card__desc">
+              A professional phone call simulation. You must complete a task — booking, enquiring, or making a complaint — in formal French.
+            </p>
+            <div class="section-card__meta">
+              <span>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
+                </svg>
+                5 minutes
+              </span>
+              <span>Formal French</span>
             </div>
-            @if (selected() === 'B') {
-              <div class="section-card__check section-card__check--b">✓</div>
-            }
-          </div>
+          </button>
 
-          <p class="section-card__tag section-card__tag--b">Section B</p>
-          <p class="section-card__title">Persuasion Roleplay</p>
-          <p class="section-card__desc">
-            Convince a sceptical friend to accept your proposal. Use arguments, handle objections, and persuade — in informal French.
-          </p>
-          <div class="section-card__meta">
-            <span>
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
-              </svg>
-              5 minutes
-            </span>
-            <span>Informal French</span>
-          </div>
-        </button>
+          <!-- Section B -->
+          <button
+            type="button"
+            class="section-card"
+            [class.section-card--b-selected]="selected() === 'B'"
+            (click)="select('B')"
+          >
+            <div class="section-card__header">
+              <div class="section-card__icon section-card__icon--b">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                </svg>
+              </div>
+              @if (selected() === 'B') {
+                <div class="section-card__check section-card__check--b">✓</div>
+              }
+            </div>
+
+            <p class="section-card__tag section-card__tag--b">Section B</p>
+            <p class="section-card__title">Persuasion Roleplay</p>
+            <p class="section-card__desc">
+              Convince a sceptical friend to accept your proposal. Use arguments, handle objections, and persuade — in informal French.
+            </p>
+            <div class="section-card__meta">
+              <span>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
+                </svg>
+                5 minutes
+              </span>
+              <span>Informal French</span>
+            </div>
+          </button>
+
+        </div>
+
+        <div class="section-select-cta">
+          <button
+            type="button"
+            class="btn btn--primary btn--lg"
+            [disabled]="!selected()"
+            (click)="startExam()"
+          >
+            @if (selected()) { Start Section {{ selected() }} → }
+            @else { Select a section above }
+          </button>
+          @if (!selected()) {
+            <p class="section-select-hint">Choose Section A or B to continue</p>
+          }
+        </div>
 
       </div>
-
-      <div class="section-select-cta">
-        <button
-          class="btn btn--primary btn--lg"
-          [disabled]="!selected()"
-          (click)="startExam()"
-        >
-          @if (selected()) { Start Section {{ selected() }} → }
-          @else { Select a section above }
-        </button>
-        @if (!selected()) {
-          <p class="section-select-hint">Choose Section A or B to continue</p>
-        }
-      </div>
-
     </div>
   </div>
-
 </div>

@@ -1,0 +1,88 @@
+// Uses global theme tokens so light/dark both stay readable and on-brand (indigo + cyan).
+
+/* Same footprint + chrome as `app-page-hero` (full width of `.dash-main`, matching padding/radius/shadow). */
+.empty-state-card {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  text-align: center;
+  padding: 22px 22px 26px;
+  border-radius: 22px;
+  border: 1px solid var(--hero-border, var(--border-mid));
+  background: var(--hero-bg, color-mix(in srgb, var(--bg-surface) 88%, transparent));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+html[data-theme='light'] .empty-state-card {
+  --hero-bg: color-mix(in srgb, var(--bg-surface) 92%, var(--accent-bg));
+  --hero-border: color-mix(in srgb, var(--border-mid) 70%, var(--accent-bdr));
+}
+
+.empty-state-card__glow {
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 120%;
+  background: radial-gradient(
+    closest-side,
+    rgba(99, 102, 241, 0.22) 0%,
+    rgba(34, 211, 238, 0.08) 45%,
+    transparent 70%
+  );
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.empty-state-card__icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  color: var(--accent-teal);
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+:host-context(html[data-theme='light']) .empty-state-card__glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(99, 102, 241, 0.28) 0%,
+    rgba(6, 182, 212, 0.14) 42%,
+    transparent 68%
+  );
+  opacity: 1;
+}
+
+.empty-state-card__title {
+  position: relative;
+  margin: 0 0 10px;
+  font-size: clamp(1.55rem, 4vw, 2.05rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.empty-state-card__desc {
+  position: relative;
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-sub);
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-state-card__actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}

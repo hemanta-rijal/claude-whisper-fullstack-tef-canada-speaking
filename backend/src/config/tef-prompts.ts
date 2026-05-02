@@ -107,7 +107,8 @@ FACTS YOU KNOW ABOUT THE CLUB:
 export const SECTION_B_SCENARIOS: SectionBScenario[] = [
   {
     id: 'gym-persuasion',
-    imageUrl: '/assets/scenarios/section-b/gym.png',
+    // LEARN: File must exist under `backend/src/assets/…` (copied to `dist` on build). Add `section-b/gym.png` when ready.
+    imageUrl: '/assets/scenarios/section-a/2.png',
     context: 'You are playing the role of a close friend of the user. They are trying to convince you to join a gym with them. You are NOT interested. Be friendly but skeptical. Raise natural objections (too expensive, no time, not your thing). Only let yourself be convinced if their arguments are strong and specific. Speak informal French. Keep each response to 1–3 sentences.',
     opening: 'Un abonnement de gym? Bof, je suis pas vraiment convaincu... C\'est cher ces trucs-là non?',
     resistance: 'You think it is too expensive and you are too busy with work. You also prefer outdoor activities.',

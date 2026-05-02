@@ -1,16 +1,5 @@
 @use '../dashboard/dashboard.scss' as *;
 
-.dash-nav__brand--link {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-
-  &:hover {
-    opacity: 0.92;
-  }
-}
-
 .results-pager {
   display: flex;
   align-items: center;

@@ -1,17 +1,23 @@
 import { Router } from 'express';
-import { loginController, logoutController, meController, registerController } from '../controllers/auth.controller.js';
+import {
+  loginController,
+  logoutController,
+  meController,
+  registerController,
+  forgotPasswordController,
+  resetPasswordController,
+} from '../controllers/auth.controller.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { loginSchema, registerSchema } from '../schemas/auth.schemas.js';
+import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '../schemas/auth.schemas.js';
 
-// Router layer: thin wiring only (no business logic).
 export const authRouter = Router();
 
 authRouter.post('/login', validate(loginSchema), loginController);
 authRouter.post('/logout', logoutController);
-authRouter.post('/register', validate(registerSchema), registerController)
+authRouter.post('/register', validate(registerSchema), registerController);
+authRouter.post('/forgot-password', validate(forgotPasswordSchema), forgotPasswordController);
+authRouter.post('/reset-password', validate(resetPasswordSchema), resetPasswordController);
 
-// `requireAuth` runs first — if cookie is missing/invalid, it responds 401 and stops here.
-// Only if `requireAuth` calls `next()` does `meController` run.
 authRouter.get('/me', requireAuth, meController);
 
