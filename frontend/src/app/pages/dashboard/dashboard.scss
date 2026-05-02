@@ -1,15 +1,6 @@
 // Dashboard + shared result cards (also used by results-list via @use).
 
 $ink: #0a0f1a;
-$surface: rgba(15, 23, 42, 0.72);
-$stroke: rgba(148, 163, 184, 0.14);
-$text: #f8fafc;
-$muted: #94a3b8;
-$dim: #64748b;
-$cyan: #22d3ee;
-$green-text: #4ade80;
-$yellow-text: #fbbf24;
-$red-text: #f87171;
 
 .dash-app {
   min-height: 100vh;
@@ -17,91 +8,9 @@ $red-text: #f87171;
     radial-gradient(1000px 520px at 8% -8%, rgba(34, 211, 238, 0.07), transparent),
     radial-gradient(800px 420px at 92% 0%, rgba(167, 139, 250, 0.09), transparent),
     linear-gradient(165deg, $ink 0%, #111827 50%, #0f172a 100%);
-  color: $text;
+  color: var(--text);
   display: flex;
   flex-direction: column;
-}
-
-.dash-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 22px;
-  border-bottom: 1px solid $stroke;
-  backdrop-filter: blur(10px);
-
-  @media (min-width: 768px) {
-    padding: 16px 40px;
-  }
-}
-
-.dash-nav__brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.dash-nav__icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(34, 211, 238, 0.12);
-  border: 1px solid rgba(34, 211, 238, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    width: 18px;
-    height: 18px;
-    color: $cyan;
-  }
-}
-
-.dash-nav__name {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.dash-nav__tag {
-  margin: 0;
-  font-size: 11px;
-  color: $dim;
-}
-
-.dash-nav__actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.dash-nav__user {
-  display: none;
-  font-size: 13px;
-  color: $muted;
-
-  @media (min-width: 640px) {
-    display: block;
-  }
-}
-
-.dash-nav__out {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid $stroke;
-  color: $muted;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
-
-  &:hover {
-    color: $text;
-    background: rgba(255, 255, 255, 0.08);
-  }
 }
 
 .dash-main {
@@ -143,21 +52,15 @@ $red-text: #f87171;
   margin-bottom: 0;
 }
 
-.dash-nav__titles {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
 // ── Insight sidebar cards ─────────────────────────────────────────────────────
 
 .insight-card {
   backdrop-filter: blur(10px);
-  background: rgba(15, 23, 42, 0.78);
-  border: 1px solid $stroke;
+  background: var(--insight-card-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 18px;
   padding: 18px 18px 16px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--shadow-md);
 }
 
 .insight-card__title {
@@ -165,7 +68,7 @@ $red-text: #f87171;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: $cyan;
+  color: var(--accent-teal);
   margin: 0 0 12px;
 }
 
@@ -180,19 +83,19 @@ $red-text: #f87171;
   font-size: 2rem;
   font-weight: 900;
   letter-spacing: -0.03em;
-  color: #4ade80;
+  color: var(--green-text);
 }
 
 .insight-stat__max {
   font-size: 14px;
-  color: $dim;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .insight-meta {
   margin: 0 0 8px;
   font-size: 12px;
-  color: $muted;
+  color: var(--text-sub);
   line-height: 1.45;
 }
 
@@ -200,7 +103,7 @@ $red-text: #f87171;
   display: inline-flex;
   font-size: 13px;
   font-weight: 600;
-  color: $cyan;
+  color: var(--accent-teal);
   text-decoration: none;
 
   &:hover {
@@ -222,7 +125,7 @@ $red-text: #f87171;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: $dim;
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
@@ -249,7 +152,7 @@ $red-text: #f87171;
 .insight-card--prose .insight-suggestion {
   font-size: 13px;
   line-height: 1.65;
-  color: $muted;
+  color: var(--text-sub);
   margin: 0 0 12px;
   max-height: 200px;
   overflow-y: auto;
@@ -262,13 +165,13 @@ $red-text: #f87171;
 
   td {
     padding: 8px 0;
-    border-bottom: 1px solid rgba(51, 65, 85, 0.45);
-    color: $muted;
+    border-bottom: 1px solid var(--border-mid);
+    color: var(--text-sub);
 
     &:last-child {
       text-align: right;
       font-weight: 700;
-      color: $text;
+      color: var(--text);
       width: 48px;
     }
   }
@@ -278,78 +181,20 @@ $red-text: #f87171;
   }
 }
 
-.dash-hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 28px;
-}
-
-.dash-hero__eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: $cyan;
-  margin: 0 0 8px;
-}
-
-.dash-hero__title {
-  font-size: clamp(1.6rem, 4vw, 2.1rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  margin: 0 0 8px;
-}
-
-.dash-hero__desc {
-  margin: 0;
-  font-size: 14px;
-  color: $muted;
-  max-width: 44ch;
-  line-height: 1.5;
-}
-
-.dash-hero__ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
 .dash-state {
   display: flex;
   justify-content: center;
   padding: 72px 0;
 }
 
-.dash-empty {
-  text-align: center;
-  padding: 56px 24px;
-  border: 1px dashed rgba(148, 163, 184, 0.25);
-  border-radius: 20px;
-  background: rgba(15, 23, 42, 0.4);
-
-  h2 {
-    margin: 0 0 10px;
-    font-size: 1.25rem;
-  }
-
-  p {
-    margin: 0 0 24px;
-    color: $muted;
-    font-size: 14px;
-  }
-}
-
 .dash-panel {
   backdrop-filter: blur(10px);
-  background: $surface;
-  border: 1px solid $stroke;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 20px;
   padding: 22px 20px;
   margin-bottom: 18px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--shadow-md);
 }
 
 .dash-panel--chart {
@@ -365,7 +210,7 @@ $red-text: #f87171;
 .dash-panel__hint {
   margin: 0 0 8px;
   font-size: 12px;
-  color: $dim;
+  color: var(--text-muted);
   line-height: 1.45;
 }
 
@@ -382,8 +227,8 @@ $red-text: #f87171;
   align-items: flex-start;
   gap: 16px;
   padding: 18px 18px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid $stroke;
+  background: var(--result-card-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 16px;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
@@ -391,12 +236,12 @@ $red-text: #f87171;
   color: inherit;
 
   &:hover {
-    border-color: rgba(34, 211, 238, 0.35);
-    background: rgba(34, 211, 238, 0.06);
+    border-color: color-mix(in srgb, var(--accent-teal) 42%, var(--panel-border));
+    background: color-mix(in srgb, var(--accent-teal) 7%, var(--result-card-bg));
     transform: translateY(-1px);
 
     .result-card__arrow {
-      color: $cyan;
+      color: var(--accent-teal);
     }
   }
 }
@@ -433,21 +278,21 @@ $red-text: #f87171;
     line-height: 1;
 
     &--high {
-      color: $green-text;
+      color: var(--green-text);
     }
 
     &--mid {
-      color: $yellow-text;
+      color: var(--yellow-text);
     }
 
     &--low {
-      color: $red-text;
+      color: var(--red-text);
     }
   }
 
   .score-denom {
     font-size: 11px;
-    color: $dim;
+    color: var(--text-muted);
     margin-top: 1px;
   }
 }
@@ -467,22 +312,22 @@ $red-text: #f87171;
   .section-label {
     font-size: 13px;
     font-weight: 600;
-    color: $text;
+    color: var(--text);
   }
 
   .dot {
-    color: $dim;
+    color: var(--text-muted);
   }
 
   .date-label {
     font-size: 12px;
-    color: $dim;
+    color: var(--text-muted);
   }
 }
 
 .result-card__reason {
   font-size: 12px;
-  color: $dim;
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
@@ -494,25 +339,25 @@ $red-text: #f87171;
 
 .chip {
   padding: 4px 10px;
-  background: rgba(30, 41, 59, 0.9);
+  background: var(--chip-bg);
   border-radius: 6px;
   font-size: 12px;
-  color: $muted;
+  color: var(--text-sub);
 
   span {
     font-weight: 600;
     margin-left: 4px;
 
     &.chip-high {
-      color: $green-text;
+      color: var(--green-text);
     }
 
     &.chip-mid {
-      color: $yellow-text;
+      color: var(--yellow-text);
     }
 
     &.chip-low {
-      color: $red-text;
+      color: var(--red-text);
     }
   }
 }
@@ -542,7 +387,7 @@ $red-text: #f87171;
 
 .result-card__arrow {
   flex-shrink: 0;
-  color: $dim;
+  color: var(--text-muted);
   transition: color 0.15s ease;
   margin-top: 4px;
 }

@@ -13,6 +13,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard),
   },
   {
+    path: 'flashcards',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/flashcards/flashcards').then(m => m.Flashcards),
+  },
+  {
+    path: 'settings',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
+  },
+  {
     path: 'results',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/results-list/results-list').then(m => m.ResultsList),

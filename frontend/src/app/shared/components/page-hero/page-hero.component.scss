@@ -1,0 +1,84 @@
+.page-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px 28px;
+  margin-bottom: 32px;
+  padding: 22px 22px 26px;
+  border-radius: 22px;
+  border: 1px solid var(--hero-border, var(--border-mid));
+  background: var(--hero-bg, color-mix(in srgb, var(--bg-surface) 88%, transparent));
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-hero__accent {
+  position: absolute;
+  top: -28px;
+  right: -16px;
+  width: 140px;
+  height: 140px;
+  opacity: 0.95;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--accent-teal) 55%, var(--accent-lt));
+}
+
+.page-hero__spot {
+  width: 100%;
+  height: 100%;
+}
+
+.page-hero__spark {
+  opacity: 0.55;
+}
+
+.page-hero__main {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.page-hero__eyebrow {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+}
+
+.page-hero__title {
+  margin: 0 0 10px;
+  font-size: clamp(1.55rem, 4vw, 2.05rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.page-hero__desc {
+  min-height: 1px;
+}
+
+.page-hero__actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  /* LEARN: `ng-content` keeps the host node (e.g. `<div pageHeroActions>`) — flex gap must apply *inside* it, not between wrapper and nothing else. */
+  > * {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+html[data-theme='light'] .page-hero {
+  --hero-bg: color-mix(in srgb, var(--bg-surface) 92%, var(--accent-bg));
+  --hero-border: color-mix(in srgb, var(--border-mid) 70%, var(--accent-bdr));
+}

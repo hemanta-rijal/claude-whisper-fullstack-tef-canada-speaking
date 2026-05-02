@@ -1,7 +1,13 @@
-// Production environment — swapped in automatically by angular.json fileReplacements.
-// Change apiUrl to your deployed backend URL before running `ng build`.
-export const environment = {
+// Production — swapped in by `angular.json` fileReplacements.
+
+import type { EnvironmentConfig, FlashcardTtsMode } from './environment.types';
+
+export type { FlashcardTtsMode };
+
+export const environment: EnvironmentConfig = {
   production: true,
-  // Nginx proxies /api/* → backend:3000/* — no cross-origin, no CORS needed.
+  /** Reverse proxy forwards `/api` to the Node listener (`PORT` / host from deployment env). */
   apiUrl: '/api',
+  /** Owner-only — set to `browser` to skip OpenAI on flashcards (install FR voices on clients). */
+  flashcardTtsMode: 'api',
 };

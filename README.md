@@ -9,7 +9,7 @@ cd backend
 npm run dev
 ```
 
-Runs **Express** (`src/index.js`). Visit `http://localhost:3000` — you should see JSON.
+Runs **Express**. On startup it logs the listen URL derived from **`PORT`** and **`LISTEN_HOST`** in `backend/.env` (see `AppEnv` / `listen-address.ts`).
 
 ## Frontend
 

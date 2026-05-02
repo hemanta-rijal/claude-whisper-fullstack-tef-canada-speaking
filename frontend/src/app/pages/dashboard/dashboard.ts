@@ -1,10 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { AuthService } from '../../services/auth';
+import { Store } from '@ngrx/store';
 import { AttemptService, type TestResult } from '../../services/attempt';
 import { ScoreTrendChart } from '../../components/score-trend-chart/score-trend-chart';
 import { RubricTrendChart } from '../../components/rubric-trend-chart/rubric-trend-chart';
+import { AppShellHeaderComponent } from '../../shared/components/app-shell-header/app-shell-header.component';
+import { EmptyStateCardComponent } from '../../shared/components/empty-state-card/empty-state-card.component';
+import { PageHeroComponent } from '../../shared/components/page-hero/page-hero.component';
+import { shellActions } from '../../shared/state/shell/shell.actions';
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
@@ -14,13 +18,22 @@ type DimensionRank = { key: string; val: number };
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, DatePipe, DecimalPipe, ScoreTrendChart, RubricTrendChart],
+  imports: [
+    RouterLink,
+    DatePipe,
+    DecimalPipe,
+    ScoreTrendChart,
+    RubricTrendChart,
+    AppShellHeaderComponent,
+    EmptyStateCardComponent,
+    PageHeroComponent,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard implements OnInit {
-  auth = inject(AuthService);
+  private store = inject(Store);
   private attemptService = inject(AttemptService);
 
   results = signal<TestResult[]>([]);
@@ -97,6 +110,7 @@ export class Dashboard implements OnInit {
   });
 
   async ngOnInit() {
+    this.store.dispatch(shellActions.brandTaglineSet({ tagline: 'Speaking lab' }));
     try {
       const data = await this.attemptService.getRecentResults(10);
       this.results.set(data);
@@ -105,9 +119,5 @@ export class Dashboard implements OnInit {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  async logout() {
-    await this.auth.logout();
   }
 }

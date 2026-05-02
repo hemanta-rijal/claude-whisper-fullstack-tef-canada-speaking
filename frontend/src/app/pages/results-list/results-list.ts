@@ -1,21 +1,32 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { AuthService } from '../../services/auth';
+import { Store } from '@ngrx/store';
 import { AttemptService, type TestResult } from '../../services/attempt';
 import { ScoreTrendChart } from '../../components/score-trend-chart/score-trend-chart';
+import { AppShellHeaderComponent } from '../../shared/components/app-shell-header/app-shell-header.component';
+import { EmptyStateCardComponent } from '../../shared/components/empty-state-card/empty-state-card.component';
+import { PageHeroComponent } from '../../shared/components/page-hero/page-hero.component';
+import { shellActions } from '../../shared/state/shell/shell.actions';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-results-list',
-  imports: [RouterLink, DatePipe, ScoreTrendChart],
+  imports: [
+    RouterLink,
+    DatePipe,
+    ScoreTrendChart,
+    AppShellHeaderComponent,
+    EmptyStateCardComponent,
+    PageHeroComponent,
+  ],
   templateUrl: './results-list.html',
   styleUrl: './results-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResultsList implements OnInit {
-  auth = inject(AuthService);
+  private store = inject(Store);
   private attemptService = inject(AttemptService);
 
   results = signal<TestResult[]>([]);
@@ -39,6 +50,7 @@ export class ResultsList implements OnInit {
   });
 
   async ngOnInit() {
+    this.store.dispatch(shellActions.brandTaglineSet({ tagline: 'All results' }));
     await Promise.all([this.loadPage(1), this.loadTrendSource()]);
   }
 
@@ -74,9 +86,5 @@ export class ResultsList implements OnInit {
 
   goNext() {
     if (this.page() < this.totalPages()) void this.loadPage(this.page() + 1);
-  }
-
-  async logout() {
-    await this.auth.logout();
   }
 }

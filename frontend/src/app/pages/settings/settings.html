@@ -1,0 +1,31 @@
+<div class="settings-page">
+  <nav class="settings-nav">
+    <a routerLink="/dashboard" class="settings-nav__back">← Dashboard</a>
+    <h1 class="settings-nav__title">Settings</h1>
+  </nav>
+
+  <main class="settings-main card">
+    <section class="settings-section" aria-labelledby="appearance-heading">
+      <h2 id="appearance-heading" class="settings-section__title">Appearance</h2>
+      <p class="settings-section__desc">Choose light or dark — saved in this browser only.</p>
+      <div class="settings-theme-toggle" role="group" aria-label="Theme">
+        <button
+          type="button"
+          class="settings-theme-btn"
+          [class.settings-theme-btn--active]="theme.preference() === 'light'"
+          (click)="setTheme('light')"
+        >
+          Light
+        </button>
+        <button
+          type="button"
+          class="settings-theme-btn"
+          [class.settings-theme-btn--active]="theme.preference() === 'dark'"
+          (click)="setTheme('dark')"
+        >
+          Dark
+        </button>
+      </div>
+    </section>
+  </main>
+</div>

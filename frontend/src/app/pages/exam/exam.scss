@@ -1,38 +1,58 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Exam Page — full-screen voice UI
+// Exam Page — full-screen voice UI (colors from global :root / html[data-theme])
+// ThemeService toggles html[data-theme='light'] — same tokens as dashboard.
 // ─────────────────────────────────────────────────────────────────────────────
 
-$accent:     #6366f1;
-$accent-lt:  #818cf8;
-$bg-base:    #020617;
-$bg-surface: #0f172a;
-$bg-elevated:#1e293b;
-$border:     #1e293b;
-$border-mid: #334155;
-$text:       #f1f5f9;
-$text-sub:   #94a3b8;
-$text-muted: #64748b;
-$red:        #ef4444;
+// Same shell layout as dashboard/results — shared header sits above the exam workspace.
+.dash-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
 
 .exam {
   min-height: 100vh;
-  background: $bg-base;
+  background: var(--bg-base);
+  color: var(--text);
   display: flex;
   flex-direction: column;
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
+// Nested under shared shell — fill viewport below global nav instead of forcing second full viewport height.
+.dash-app > .exam {
+  flex: 1;
+  min-height: 0;
+}
+
+// ── Header — 1fr | auto | 1fr keeps the timer at true viewport center ─────────
 
 .exam-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding: 14px 24px;
-  border-bottom: 1px solid $border;
+  border-bottom: 1px solid var(--border);
 
-  @media (min-width: 768px) { padding: 14px 40px; }
+  @media (min-width: 768px) {
+    padding: 14px 40px;
+  }
+}
+
+.exam-header__lead {
+  justify-self: start;
+  min-width: 0;
+}
+
+.exam-header__timer {
+  justify-self: center;
+}
+
+.exam-header__trail {
+  justify-self: end;
+  min-height: 36px; // avoids vertical jump when End Exam appears
 }
 
 .exam-header__label {
@@ -40,7 +60,7 @@ $red:        #ef4444;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: $text-muted;
+  color: var(--text-muted);
 }
 
 .exam-timer {
@@ -48,42 +68,51 @@ $red:        #ef4444;
   align-items: center;
   gap: 8px;
 
-  svg { width: 16px; height: 16px; }
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: color 300ms ease;
+  }
+
+  &.exam-timer--warning svg {
+    color: var(--red-text);
+  }
 
   .timer-value {
     font-size: 20px;
     font-family: ui-monospace, 'SF Mono', monospace;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    color: $text;
+    color: var(--text);
     transition: color 300ms ease;
 
-    &--warning { color: #f87171; }
+    &--warning {
+      color: var(--red-text);
+    }
   }
-
-  svg { color: $text-muted; transition: color 300ms ease; }
-  &.exam-timer--warning svg { color: #f87171; }
 }
 
 .exam-header__end-btn {
   font-size: 12px;
   font-weight: 500;
-  color: $text-muted;
-  background: $bg-elevated;
-  border: 1px solid $border-mid;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
   border-radius: 10px;
   padding: 7px 14px;
   cursor: pointer;
-  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+  transition:
+    color 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
 
   &:hover {
-    color: #fca5a5;
-    background: rgba(239,68,68,0.08);
-    border-color: rgba(239,68,68,0.2);
+    color: var(--red-text);
+    background: color-mix(in srgb, var(--red-text) 12%, var(--bg-elevated));
+    border-color: color-mix(in srgb, var(--red-text) 35%, var(--border-mid));
   }
 }
-
-.exam-header__placeholder { width: 80px; } // keeps timer centred
 
 // ── Two-column body ───────────────────────────────────────────────────────────
 
@@ -93,24 +122,22 @@ $red:        #ef4444;
   grid-template-columns: 1fr 1fr;
   gap: 0;
 
-  // Stack vertically on mobile
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 }
 
-// LEFT — scenario image panel
 .exam-left {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px 32px 48px 40px;
-  border-right: 1px solid $border;
+  border-right: 1px solid var(--border);
 
   @media (max-width: 768px) {
     padding: 24px 20px;
     border-right: none;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid var(--border);
   }
 }
 
@@ -118,29 +145,37 @@ $red:        #ef4444;
   width: 100%;
   max-width: 460px;
   border-radius: 16px;
-  border: 1px solid $border;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
-// Placeholder shown while image URL is loading
 .exam-img-placeholder {
   width: 100%;
   max-width: 460px;
   aspect-ratio: 4 / 3;
   border-radius: 16px;
-  border: 1px dashed $border-mid;
+  border: 1px dashed var(--border-mid);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: $text-muted;
+  color: var(--text-muted);
   font-size: 13px;
+  background: var(--bg-surface);
 
-  svg { width: 40px; height: 40px; opacity: 0.4; }
+  svg {
+    width: 40px;
+    height: 40px;
+    opacity: 0.4;
+  }
+
+  &--error {
+    border-color: color-mix(in srgb, var(--red-text) 45%, var(--border-mid));
+    color: var(--red-text);
+  }
 }
 
-// RIGHT — controls panel
 .exam-right {
   display: flex;
   flex-direction: column;
@@ -166,36 +201,42 @@ $red:        #ef4444;
 
 .exam-state__label {
   font-size: 14px;
-  color: $text-sub;
+  color: var(--text-sub);
 }
 
-// Idle: start button
 .exam-start-btn {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 18px 40px;
-  background: $accent;
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 20px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 28px rgba(99,102,241,0.3);
-  transition: background 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+  box-shadow: var(--shadow-accent);
+  transition:
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 100ms ease;
 
   &:hover {
-    background: $accent-lt;
-    box-shadow: 0 10px 32px rgba(99,102,241,0.4);
+    background: var(--accent-lt);
+    filter: brightness(1.05);
   }
 
-  &:active { transform: scale(0.98); }
+  &:active {
+    transform: scale(0.98);
+  }
 
-  svg { width: 22px; height: 22px; }
+  svg {
+    width: 22px;
+    height: 22px;
+  }
 }
 
-// Listening: pulsing mic rings
 .exam-mic {
   position: relative;
   width: 112px;
@@ -208,29 +249,41 @@ $red:        #ef4444;
 .exam-mic__ring {
   position: absolute;
   border-radius: 50%;
-  border: 2px solid $accent;
+  border: 2px solid var(--accent);
   animation: ping 1.5s ease-out infinite;
   opacity: 0;
 
-  &--outer { width: 112px; height: 112px; animation-delay: 0s; }
-  &--inner { width: 80px;  height: 80px;  animation-delay: 0.4s; }
+  &--outer {
+    width: 112px;
+    height: 112px;
+    animation-delay: 0s;
+  }
+
+  &--inner {
+    width: 80px;
+    height: 80px;
+    animation-delay: 0.4s;
+  }
 }
 
 .exam-mic__core {
   position: relative;
   width: 56px;
   height: 56px;
-  background: $accent;
+  background: var(--accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 24px rgba(99,102,241,0.5);
+  box-shadow: var(--shadow-accent);
 
-  svg { color: #fff; width: 26px; height: 26px; }
+  svg {
+    color: #fff;
+    width: 26px;
+    height: 26px;
+  }
 }
 
-// AI speaking: waveform bars
 .exam-waveform {
   display: flex;
   align-items: center;
@@ -240,44 +293,46 @@ $red:        #ef4444;
 
 .exam-waveform__bar {
   width: 5px;
-  background: $accent-lt;
+  background: var(--accent-lt);
   border-radius: 9999px;
   animation: wave 0.8s ease-in-out infinite alternate;
 }
-
-// ── Transcript toggle button ──────────────────────────────────────────────────
 
 .transcript-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: $bg-elevated;
-  border: 1px solid $border-mid;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
   border-radius: 20px;
-  color: $text-sub;
+  color: var(--text-sub);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+  transition:
+    color 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
 
-  svg { width: 15px; height: 15px; flex-shrink: 0; }
+  svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
 
   &:hover {
-    color: $text;
-    background: $bg-surface;
-    border-color: $accent;
+    color: var(--text);
+    background: var(--bg-surface);
+    border-color: var(--accent);
   }
 
-  // When transcript is visible, highlight the toggle
   &--active {
-    color: $accent-lt;
-    border-color: rgba(99,102,241,0.4);
-    background: rgba(99,102,241,0.08);
+    color: var(--accent-lt);
+    border-color: var(--accent-bdr);
+    background: var(--accent-bg);
   }
 }
-
-// ── Conversation transcript ───────────────────────────────────────────────────
 
 .exam-transcript {
   width: 100%;
@@ -300,37 +355,31 @@ $red:        #ef4444;
 
   &--examiner {
     align-self: flex-start;
-    background: $bg-surface;
-    border: 1px solid $border;
-    color: $text-sub;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-sub);
     border-bottom-left-radius: 4px;
   }
 
   &--candidate {
     align-self: flex-end;
-    background: rgba(99,102,241,0.15);
-    border: 1px solid rgba(99,102,241,0.25);
-    color: #c7d2fe;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bdr);
+    color: var(--text-sub);
     border-bottom-right-radius: 4px;
   }
 }
 
-// ── Error ─────────────────────────────────────────────────────────────────────
-
 .exam-error {
   padding: 12px 16px;
-  background: rgba(239,68,68,0.08);
-  border: 1px solid rgba(239,68,68,0.2);
+  background: color-mix(in srgb, var(--red-text) 12%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--red-text) 35%, var(--border));
   border-radius: 12px;
-  color: #fca5a5;
+  color: var(--red-text);
   font-size: 13px;
   max-width: 380px;
   text-align: center;
 }
-
-// ── Thinking dots (processing state) ─────────────────────────────────────────
-// Three bouncing dots — feels like a chat app, not a loading spinner.
-// Shows while Whisper + Claude + TTS are running.
 
 .exam-thinking {
   display: flex;
@@ -343,34 +392,66 @@ $red:        #ef4444;
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: $accent;
+    background: var(--accent);
     animation: thinking-dot 1.2s ease-in-out infinite;
 
-    &:nth-child(2) { animation-delay: 0.2s; }
-    &:nth-child(3) { animation-delay: 0.4s; }
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Animations
-// ─────────────────────────────────────────────────────────────────────────────
-
 @keyframes ping {
-  0%       { transform: scale(0.8); opacity: 0.7; }
-  80%, 100% { transform: scale(1.4); opacity: 0; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+
+  80%,
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
 }
 
 @keyframes wave {
-  from { transform: scaleY(0.3); opacity: 0.5; }
-  to   { transform: scaleY(1);   opacity: 1; }
+  from {
+    transform: scaleY(0.3);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes thinking-dot {
-  0%, 60%, 100% { transform: translateY(0);    opacity: 0.35; }
-  30%           { transform: translateY(-10px); opacity: 1; }
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
 }

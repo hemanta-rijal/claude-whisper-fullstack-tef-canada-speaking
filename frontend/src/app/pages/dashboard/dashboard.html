@@ -1,48 +1,32 @@
 <div class="dash-app">
-  <nav class="dash-nav">
-    <div class="dash-nav__brand">
-      <div class="dash-nav__icon">
-        <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
-        </svg>
-      </div>
-      <div class="dash-nav__titles">
-        <p class="dash-nav__name">TEF Canada</p>
-        <p class="dash-nav__tag">Speaking lab</p>
-      </div>
-    </div>
-    <div class="dash-nav__actions">
-      <span class="dash-nav__user">{{ auth.currentUser()?.name ?? auth.currentUser()?.email }}</span>
-      <button type="button" class="dash-nav__out" (click)="logout()">Sign out</button>
-    </div>
-  </nav>
+  <app-shell-header />
 
   <main class="dash-main">
-    <header class="dash-hero">
-      <div>
-        <p class="dash-hero__eyebrow">Overview</p>
-        <h1 class="dash-hero__title">Your speaking analytics</h1>
-        <p class="dash-hero__desc">
-          Based on your <strong>10 most recent</strong> attempts: compare rubric dimensions over time,
-          spot your best overall score, and read the latest examiner suggestions — all beside your session list.
-        </p>
-      </div>
-      <div class="dash-hero__ctas">
+    <app-page-hero eyebrow="Overview" title="Your speaking analytics">
+      <p pageHeroDesc class="page-hero-desc">
+        Based on your <strong>10 most recent</strong> attempts: compare rubric dimensions over time,
+        spot your best overall score, and read the latest examiner suggestions — all beside your session list.
+      </p>
+      <div pageHeroActions>
+        <a routerLink="/flashcards" class="btn btn--ghost btn--sm">Flashcards</a>
         <a routerLink="/results" class="btn btn--ghost btn--sm">All results</a>
         <a routerLink="/exam/select" class="btn btn--primary btn--sm">+ New exam</a>
       </div>
-    </header>
+    </app-page-hero>
 
     @if (loading()) {
       <div class="dash-state">
         <span class="spinner spinner--accent spinner--lg"></span>
       </div>
     } @else if (results().length === 0) {
-      <div class="dash-empty">
-        <h2>No data yet</h2>
-        <p>Complete a practice exam to unlock charts, averages, and suggestions.</p>
-        <a routerLink="/exam/select" class="btn btn--primary">Start exam</a>
-      </div>
+      <app-empty-state-card
+        title="No data yet"
+        description="Complete a practice exam to unlock charts, averages, and suggestions."
+        primaryLink="/exam/select"
+        primaryLabel="Start exam"
+        secondaryLink="/flashcards"
+        secondaryLabel="Flashcards"
+      />
     } @else {
       <div class="dash-two-col">
         <!-- LEARN: Sidebar = computed insights; primary column = charts + list (wider on lg screens). -->
