@@ -39,6 +39,10 @@ export class AuthService {
 
   async register(email: string, password: string, name: string): Promise<void> {
     await firstValueFrom(this.http.post(`${API}/auth/register`, { email, password, name }));
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    await firstValueFrom(this.http.get(`${API}/auth/verify-email`, { params: { token } }));
     const user = await firstValueFrom(this.http.get<User>(`${API}/auth/me`));
     this.currentUser.set(user);
     this.router.navigate(['/dashboard']);

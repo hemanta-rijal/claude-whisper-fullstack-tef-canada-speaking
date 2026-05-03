@@ -32,14 +32,16 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       # Cookie security — set to true only when serving over HTTPS
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
-      # Password reset email — all optional; logs reset URL to console when unset
+      # Email ��� Mailtrap takes priority; falls back to SMTP, then logs to console
       APP_URL: ${APP_URL:-http://localhost}
+      MAILTRAP_TOKEN: ${MAILTRAP_TOKEN:-}
+      MAILTRAP_INBOX_ID: ${MAILTRAP_INBOX_ID:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@tef-canada.app}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_SECURE: ${SMTP_SECURE:-false}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_FROM: ${SMTP_FROM:-noreply@tef-canada.app}
     depends_on:
       postgres:
         condition: service_healthy

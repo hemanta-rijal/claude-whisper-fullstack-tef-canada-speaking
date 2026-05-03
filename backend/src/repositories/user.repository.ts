@@ -2,11 +2,10 @@ import { prisma } from '../lib/prisma.js';
 
 // Repository layer: DB access only (Prisma queries).
 export const userRepository = {
-  async findByEmail(email: string): Promise<{ id: string; passwordHash: string | null } | null> {
-    // Prisma -> SQL-ish: SELECT id, passwordHash FROM User WHERE email = ? LIMIT 1;
+  async findByEmail(email: string): Promise<{ id: string; passwordHash: string | null; emailVerifiedAt: Date | null } | null> {
     return prisma.user.findUnique({
       where: { email },
-      select: { id: true, passwordHash: true },
+      select: { id: true, passwordHash: true, emailVerifiedAt: true },
     });
   },
 
@@ -29,6 +28,13 @@ export const userRepository = {
     await prisma.user.update({
       where: { id: userId },
       data: { passwordHash },
+    });
+  },
+
+  async setEmailVerified(userId: string): Promise<void> {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { emailVerifiedAt: new Date() },
     });
   },
 };
