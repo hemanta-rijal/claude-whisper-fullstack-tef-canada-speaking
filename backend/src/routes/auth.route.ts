@@ -4,6 +4,7 @@ import {
   logoutController,
   meController,
   registerController,
+  verifyEmailController,
   forgotPasswordController,
   resetPasswordController,
 } from '../controllers/auth.controller.js';
@@ -16,6 +17,7 @@ export const authRouter = Router();
 authRouter.post('/login', validate(loginSchema), loginController);
 authRouter.post('/logout', logoutController);
 authRouter.post('/register', validate(registerSchema), registerController);
+authRouter.get('/verify-email', verifyEmailController);
 authRouter.post('/forgot-password', validate(forgotPasswordSchema), forgotPasswordController);
 authRouter.post('/reset-password', validate(resetPasswordSchema), resetPasswordController);
 

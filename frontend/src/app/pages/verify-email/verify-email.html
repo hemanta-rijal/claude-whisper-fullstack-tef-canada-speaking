@@ -1,0 +1,68 @@
+<div class="ve-page">
+
+  <!-- ── Left: Brand Panel ─────────────────────────────────────────────── -->
+  <aside class="ve-brand">
+    <div class="ve-brand__rings">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="ve-brand__logo">
+      <div class="logo-inner">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+        </svg>
+      </div>
+      <span class="logo-name">TEF Canada</span>
+    </div>
+
+    <div class="ve-brand__body">
+      <h2>Almost there —<br/>verify your email</h2>
+      <p>Confirming your email keeps your account secure and ensures you receive important updates about your practice results.</p>
+    </div>
+
+    <p class="ve-brand__footer">Powered by OpenAI Whisper &amp; Anthropic Claude</p>
+  </aside>
+
+  <!-- ── Right: Status Panel ───────────────────────────────────────────── -->
+  <main class="ve-panel">
+
+    <div class="ve-mobile-logo">
+      <div class="logo-badge-mobile">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm6 10a6 6 0 0 1-12 0H4a8 8 0 0 0 16 0h-2zm-7 8v2H9v2h6v-2h-2v-2h-2z"/>
+        </svg>
+      </div>
+      <p>TEF Canada</p>
+    </div>
+
+    <div class="ve-wrap">
+
+      @if (loading()) {
+        <!-- ── Loading state ── -->
+        <div class="ve-loading">
+          <div class="ve-loading__spinner"></div>
+          <p>Verifying your email…</p>
+        </div>
+
+      } @else if (error()) {
+        <!-- ── Error state ── -->
+        <div class="ve-error">
+          <div class="ve-error__icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+          </div>
+          <h1>Verification failed</h1>
+          <p>{{ error() }}</p>
+          <a routerLink="/register" class="btn btn--primary btn--full ve-action-btn">
+            Register again
+          </a>
+          <a routerLink="/login" class="btn btn--ghost btn--full">
+            Back to sign in
+          </a>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>

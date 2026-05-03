@@ -61,8 +61,23 @@ export async function registerController(req: Request, res: Response): Promise<v
   const { email, name, password } = (req.body ?? {}) as RegisterInput;
   try {
     const result = await authService.registerWithPassword({ email, name, password });
-    res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
     res.status(201).json({ ok: true, userId: result.userId });
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+    } else {
+      console.error('[register] unexpected error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+}
+
+export async function verifyEmailController(req: Request, res: Response): Promise<void> {
+  const token = (req.query['token'] as string) ?? '';
+  try {
+    const result = await authService.verifyEmail(token);
+    res.cookie(SESSION_COOKIE, result.sessionId, COOKIE_OPTIONS);
+    res.status(200).json({ ok: true, userId: result.userId });
   } catch (err) {
     if (err instanceof AppError) {
       res.status(err.statusCode).json({ error: err.message });

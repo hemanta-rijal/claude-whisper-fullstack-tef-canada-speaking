@@ -18,16 +18,15 @@ export class Register {
   password = signal('');
   error = signal('');
   loading = signal(false);
+  registered = signal(false);
 
   async onSubmit() {
     this.error.set('');
     this.loading.set(true);
     try {
       await this.auth.register(this.email(), this.password(), this.name());
+      this.registered.set(true);
     } catch (err) {
-      // LEARN: Angular's HttpClient wraps HTTP errors in HttpErrorResponse.
-      // err.status is the actual HTTP status code the server sent back.
-      // err.error.error is the { error: '...' } body we return from Express.
       if (err instanceof HttpErrorResponse) {
         if (err.status === 409) {
           this.error.set('This email is already registered. Try logging in instead.');

@@ -60,81 +60,99 @@
     </div>
 
     <div class="register-form-wrap">
-      <div class="register-form-head">
-        <h1>Create your account</h1>
-        <p>Free forever. No credit card required.</p>
-      </div>
 
-      <form class="register-form" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
-
-        <div class="form-field">
-          <label class="form-label">Full name</label>
-          <input
-            class="form-input"
-            type="text"
-            [ngModel]="name()"
-            (ngModelChange)="name.set($event)"
-            name="name"
-            required
-            autocomplete="name"
-            placeholder="Marie Dupont"
-          />
-        </div>
-
-        <div class="form-field">
-          <label class="form-label">Email address</label>
-          <input
-            class="form-input"
-            type="email"
-            [ngModel]="email()"
-            (ngModelChange)="email.set($event)"
-            name="email"
-            required
-            autocomplete="email"
-            placeholder="you@example.com"
-          />
-        </div>
-
-        <div class="form-field">
-          <label class="form-label">Password</label>
-          <input
-            class="form-input"
-            type="password"
-            [ngModel]="password()"
-            (ngModelChange)="password.set($event)"
-            name="password"
-            required
-            minlength="8"
-            autocomplete="new-password"
-            placeholder="Min. 8 characters"
-          />
-        </div>
-
-        @if (error()) {
-          <div class="form-error">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      @if (registered()) {
+        <!-- ── Check your email state ── -->
+        <div class="register-success">
+          <div class="register-success__icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
             </svg>
-            {{ error() }}
           </div>
-        }
+          <h1>Check your email</h1>
+          <p>We sent a verification link to <strong>{{ email() }}</strong>. Click the link to activate your account.</p>
+          <p class="register-success__note">Didn't receive it? Check your spam folder or <a routerLink="/register" (click)="registered.set(false)">try again</a>.</p>
+        </div>
 
-        <button type="submit" class="btn btn--primary btn--full" [disabled]="loading()">
-          @if (loading()) {
-            <span class="spinner"></span> Creating account…
-          } @else {
-            Create account
+      } @else {
+        <!-- ── Form state ── -->
+        <div class="register-form-head">
+          <h1>Create your account</h1>
+          <p>Free forever. No credit card required.</p>
+        </div>
+
+        <form class="register-form" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
+
+          <div class="form-field">
+            <label class="form-label">Full name</label>
+            <input
+              class="form-input"
+              type="text"
+              [ngModel]="name()"
+              (ngModelChange)="name.set($event)"
+              name="name"
+              required
+              autocomplete="name"
+              placeholder="Marie Dupont"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Email address</label>
+            <input
+              class="form-input"
+              type="email"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event)"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Password</label>
+            <input
+              class="form-input"
+              type="password"
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              name="password"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              placeholder="Min. 8 characters"
+            />
+          </div>
+
+          @if (error()) {
+            <div class="form-error">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              {{ error() }}
+            </div>
           }
-        </button>
 
-      </form>
+          <button type="submit" class="btn btn--primary btn--full" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner"></span> Creating account…
+            } @else {
+              Create account
+            }
+          </button>
 
-      <div class="form-divider"><span>or</span></div>
+        </form>
 
-      <p class="register-footer-link">
-        Already have an account?
-        <a routerLink="/login">Sign in</a>
-      </p>
+        <div class="form-divider"><span>or</span></div>
+
+        <p class="register-footer-link">
+          Already have an account?
+          <a routerLink="/login">Sign in</a>
+        </p>
+      }
+
     </div>
 
   </main>

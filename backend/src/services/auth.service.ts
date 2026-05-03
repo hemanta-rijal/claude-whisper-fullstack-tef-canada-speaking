@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { userRepository } from '../repositories/user.repository.js';
 import { sessionRepository } from '../repositories/session.repository.js';
 import { passwordResetRepository } from '../repositories/password-reset.repository.js';
+import { emailVerificationRepository } from '../repositories/email-verification.repository.js';
 import { emailService } from './email.service.js';
 import { AppError } from '../lib/errors.js';
 
@@ -22,30 +23,44 @@ export const authService = {
     if (!ok) {
       throw new AppError(401, 'Invalid email or password');
     }
-    // TODO: decide expiry duration and create a session row in DB
+    if (!user.emailVerifiedAt) {
+      throw new AppError(403, 'Please verify your email address before signing in');
+    }
 
     const session = await sessionRepository.createForUser(user.id);
     return { userId: user.id, sessionId: session.id };
   },
-  async registerWithPassword(input: RegisterInput): Promise<{ userId: string; sessionId: string }> {
+
+  async registerWithPassword(input: RegisterInput): Promise<{ userId: string }> {
     const email = input.email ?? '';
     const password = input.password ?? '';
     const name = input.name;
+    const appUrl = process.env.APP_URL ?? 'http://localhost:4200';
 
     const existing = await userRepository.findByEmail(email);
     if (existing) {
       throw new AppError(409, 'Email already in use');
     }
     const passwordHash = await bcrypt.hash(password, 12);
-    const newUser = await userRepository.createUser(
-      {
-        email: email,
-        passwordHash: passwordHash,
-        name: name
-      })
+    const newUser = await userRepository.createUser({ email, passwordHash, name });
 
-    const session = await sessionRepository.createForUser(newUser.id);
-    return { userId: newUser.id, sessionId: session.id };
+    const rawToken = await emailVerificationRepository.createToken(newUser.id);
+    const verifyUrl = `${appUrl}/verify-email?token=${rawToken}`;
+    await emailService.sendEmailVerification(email, verifyUrl);
+
+    return { userId: newUser.id };
+  },
+
+  async verifyEmail(rawToken: string): Promise<{ userId: string; sessionId: string }> {
+    const record = await emailVerificationRepository.findValidToken(rawToken);
+    if (!record) {
+      throw new AppError(400, 'Invalid or expired verification link');
+    }
+
+    await userRepository.setEmailVerified(record.userId);
+    await emailVerificationRepository.deleteToken(record.id);
+    const session = await sessionRepository.createForUser(record.userId);
+    return { userId: record.userId, sessionId: session.id };
   },
 
   async forgotPassword(email: string): Promise<void> {

@@ -1,25 +1,18 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Register Page  (mirrors login layout)
-// ─────────────────────────────────────────────────────────────────────────────
-
 $accent:     #6366f1;
 $accent-lt:  #818cf8;
 $bg-base:    #020617;
-$bg-surface: #0f172a;
-$bg-elevated:#1e293b;
-$border-mid: #334155;
 $text:       #f1f5f9;
 $text-sub:   #94a3b8;
 $text-muted: #64748b;
 
-.register-page {
+.ve-page {
   min-height: 100vh;
   display: flex;
 }
 
 // ── Brand panel ──────────────────────────────────────────────────────────────
 
-.register-brand {
+.ve-brand {
   display: none;
   width: 460px;
   flex-shrink: 0;
@@ -33,7 +26,7 @@ $text-muted: #64748b;
   @media (min-width: 1024px) { display: flex; }
 }
 
-.register-brand__rings {
+.ve-brand__rings {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -52,7 +45,7 @@ $text-muted: #64748b;
   }
 }
 
-.register-brand__logo {
+.ve-brand__logo {
   position: relative;
   z-index: 1;
   display: flex;
@@ -79,7 +72,7 @@ $text-muted: #64748b;
   }
 }
 
-.register-brand__body {
+.ve-brand__body {
   position: relative;
   z-index: 1;
 
@@ -96,61 +89,19 @@ $text-muted: #64748b;
     color: #c7d2fe;
     font-size: 14px;
     line-height: 1.65;
-    margin-bottom: 36px;
   }
 }
 
-.register-brand__steps {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .step-num {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: $accent;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1px;
-  }
-
-  .step-text {
-    p:first-child {
-      color: #e0e7ff;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 2px;
-    }
-    p:last-child {
-      color: #a5b4fc;
-      font-size: 12px;
-    }
-  }
-}
-
-.register-brand__footer {
+.ve-brand__footer {
   position: relative;
   z-index: 1;
   font-size: 11px;
   color: #818cf8;
 }
 
-// ── Form panel ───────────────────────────────────────────────────────────────
+// ── Status panel ─────────────────────────────────────────────────────────────
 
-.register-panel {
+.ve-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -163,7 +114,7 @@ $text-muted: #64748b;
   @media (min-width: 640px) { padding: 64px 32px; }
 }
 
-.register-mobile-logo {
+.ve-mobile-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -187,48 +138,37 @@ $text-muted: #64748b;
   @media (min-width: 1024px) { display: none; }
 }
 
-.register-form-wrap {
+.ve-wrap {
   width: 100%;
   max-width: 380px;
 }
 
-.register-form-head {
-  margin-bottom: 28px;
+// ── Loading state ─────────────────────────────────────────────────────────────
 
-  h1 {
-    font-size: 26px;
-    font-weight: 700;
-    color: $text;
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
-  }
-
-  p { font-size: 14px; color: $text-sub; }
-}
-
-.register-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.register-footer-link {
+.ve-loading {
   text-align: center;
-  font-size: 14px;
-  color: $text-muted;
+  animation: fade-in 0.25s ease;
 
-  a {
-    color: $accent-lt;
-    font-weight: 600;
-    margin-left: 4px;
-    transition: color 150ms ease;
-    &:hover { color: #a5b4fc; }
+  p {
+    font-size: 14px;
+    color: $text-sub;
+    margin-top: 20px;
   }
 }
 
-// ── Email sent success state ──────────────────────────────────────────────────
+.ve-loading__spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(99,102,241,0.2);
+  border-top-color: $accent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
 
-.register-success {
+// ── Error state ───────────────────────────────────────────────────────────────
+
+.ve-error {
   text-align: center;
   animation: fade-in 0.25s ease;
 
@@ -244,36 +184,30 @@ $text-muted: #64748b;
     font-size: 14px;
     color: $text-sub;
     line-height: 1.6;
-    margin-bottom: 12px;
-
-    strong { color: $text; }
+    margin-bottom: 28px;
   }
 }
 
-.register-success__icon {
+.ve-error__icon {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 24px;
 
-  svg { color: $accent-lt; width: 30px; height: 30px; }
+  svg { color: #fbbf24; width: 30px; height: 30px; }
 }
 
-.register-success__note {
-  font-size: 13px;
-  color: $text-muted;
+.ve-action-btn {
+  margin-bottom: 12px;
+}
 
-  a {
-    color: $accent-lt;
-    font-weight: 600;
-    transition: color 150ms ease;
-    &:hover { color: #a5b4fc; }
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes fade-in {

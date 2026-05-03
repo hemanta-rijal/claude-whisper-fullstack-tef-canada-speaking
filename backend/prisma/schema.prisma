@@ -24,9 +24,10 @@ model User {
   @@index([oauthProviderAccountId])
 
   // One user can have many active sessions (one per device/browser).
-  sessions            Session[]
-  testResults         TestResult[]
-  passwordResetTokens PasswordResetToken[]
+  sessions                  Session[]
+  testResults               TestResult[]
+  passwordResetTokens       PasswordResetToken[]
+  emailVerificationTokens   EmailVerificationToken[]
 }
 
 model Session {
@@ -91,6 +92,17 @@ model PasswordResetToken {
   tokenHash String   @unique
   expiresAt DateTime
   usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
   createdAt DateTime @default(now())
 
   @@index([userId])
