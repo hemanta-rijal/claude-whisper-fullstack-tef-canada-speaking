@@ -1,0 +1,95 @@
+<div class="vb-app">
+  <app-shell-header />
+
+  <main class="vb-main">
+    <app-page-hero eyebrow="TEF Canada" title="Vocabulary builder (expression écrite)">
+      <p pageHeroDesc class="page-hero-desc">
+        Enter a <strong>French word or expression</strong>. You get Section&nbsp;A- and B-style example sentences,
+        a <strong>famille de mots</strong>, and <strong>English equivalents</strong> for every item so you can check meaning quickly.
+      </p>
+    </app-page-hero>
+
+    <section class="vb-panel" aria-label="Input">
+      <label class="vb-label" for="vb-expression">Mot ou expression</label>
+      <div class="vb-row">
+        <input
+          id="vb-expression"
+          type="text"
+          class="vb-input"
+          name="expression"
+          [(ngModel)]="expressionInput"
+          maxlength="200"
+          placeholder="Ex. prendre parti, mettre en œuvre…"
+          (keyup.enter)="submit()"
+          [disabled]="loading()"
+        />
+        <button
+          type="button"
+          class="btn btn--primary"
+          (click)="submit()"
+          [disabled]="loading() || !expressionInput.trim()"
+        >
+          @if (loading()) {
+            <span class="spinner" aria-hidden="true"></span>
+          } @else {
+            Generate
+          }
+        </button>
+      </div>
+      @if (error(); as err) {
+        <p class="vb-error" role="alert">{{ err }}</p>
+      }
+    </section>
+
+    @if (result(); as r) {
+      <div class="vb-results">
+        <section class="vb-panel vb-panel--accent" aria-labelledby="vb-headword">
+          <h2 id="vb-headword" class="vb-panel__title">{{ r.word }}</h2>
+          <p class="vb-en">{{ r.wordEn }}</p>
+          <p class="vb-pos">{{ r.pos }} · <span class="vb-pos-en">{{ r.posEn }}</span></p>
+        </section>
+
+        <div class="vb-two-col">
+          <section class="vb-panel" aria-labelledby="vb-fd">
+            <h3 id="vb-fd" class="vb-panel__title">Section A — fait divers</h3>
+            <p class="vb-panel__hint">Registre journalistique / neutre — adapte à ta consigne exacte.</p>
+            <p class="vb-quote">{{ r.fd }}</p>
+            <p class="vb-en vb-en--quote">{{ r.fdEn }}</p>
+          </section>
+
+          <section class="vb-panel" aria-labelledby="vb-diss">
+            <h3 id="vb-diss" class="vb-panel__title">Section B — dissertation</h3>
+            <p class="vb-panel__hint">Registre soutenu — connecteurs et argumentation.</p>
+            <p class="vb-quote">{{ r.diss }}</p>
+            <p class="vb-en vb-en--quote">{{ r.dissEn }}</p>
+          </section>
+        </div>
+
+        <section class="vb-panel" aria-labelledby="vb-famille">
+          <h3 id="vb-famille" class="vb-panel__title">Famille de mots</h3>
+          <p class="vb-panel__hint">Minimum verbe + nom + adjectif demandés au modèle — réemploie dans tes propres phrases.</p>
+          <table class="vb-table">
+            <thead>
+              <tr>
+                <th scope="col">Mot</th>
+                <th scope="col">EN</th>
+                <th scope="col">Catégorie</th>
+                <th scope="col">EN</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of r.famille; track row.w) {
+                <tr>
+                  <td>{{ row.w }}</td>
+                  <td class="vb-table-en">{{ row.wEn }}</td>
+                  <td>{{ row.p }}</td>
+                  <td class="vb-table-en">{{ row.pEn }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      </div>
+    }
+  </main>
+</div>

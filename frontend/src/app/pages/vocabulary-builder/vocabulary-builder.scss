@@ -1,0 +1,145 @@
+.vb-app {
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text);
+}
+
+.vb-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 3rem;
+}
+
+.vb-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg, 16px);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.vb-panel--accent {
+  border-color: var(--accent-bdr);
+  background: var(--accent-bg);
+}
+
+.vb-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.vb-panel__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.vb-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: 0.5rem;
+}
+
+.vb-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.vb-input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--r-md, 12px);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 1rem;
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.vb-error {
+  margin: 0.75rem 0 0;
+  color: var(--red-text);
+  font-size: 0.9rem;
+}
+
+.vb-pos {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
+
+.vb-pos-en {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/** English gloss / translation lines (paired under French). */
+.vb-en {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.vb-en--quote {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-mid);
+}
+
+.vb-table-en {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.vb-quote {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.vb-two-col {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.vb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.55rem 0.65rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+}

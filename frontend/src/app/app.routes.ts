@@ -18,6 +18,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/flashcards/flashcards').then(m => m.Flashcards),
   },
   {
+    path: 'vocabulary-builder',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/vocabulary-builder/vocabulary-builder').then(m => m.VocabularyBuilder),
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
