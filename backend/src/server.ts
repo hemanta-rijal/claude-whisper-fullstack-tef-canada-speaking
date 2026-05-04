@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import { authRouter } from './routes/auth.route.js';
 import { attemptRouter } from './routes/attempt.route.js';
 import { ttsRouter } from './routes/tts.route.js';
+import { vocabularyRouter } from './routes/vocabulary.route.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 
 // __dirname doesn't exist in ES modules — this recreates it
@@ -37,6 +38,7 @@ app.use('/assets', express.static(join(__dirname, 'assets')));
 app.use('/auth', authRouter);
 app.use('/attempts', attemptRouter);
 app.use('/tts', ttsRouter);
+app.use('/vocabulary', vocabularyRouter);
 
 // Minimal "proof the wiring works" route.
 app.get('/health', (_req: Request, res: Response) => {
