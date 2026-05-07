@@ -13,7 +13,8 @@ export type { EvaluationResult };
  * Strips markdown fences and isolates the first `{` … `}` block — models often add chatter.
  */
 function extractJsonObject(raw: string): string {
-  const trimmed = raw
+  // Prepend the '{' that was used as assistant prefill — the SDK returns only the continuation.
+  const trimmed = ('{' + raw)
     .trim()
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
@@ -153,8 +154,12 @@ Exemple de forme (avec des scores fictifs — adapte à la performance réelle) 
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-5',
-    max_tokens: 600,
-    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 1024,
+    messages: [
+      { role: 'user', content: prompt },
+      // Prefill forces the response to start with '{' — no markdown, no preamble.
+      { role: 'assistant', content: '{' },
+    ],
   });
 
   const block = response.content[0];
