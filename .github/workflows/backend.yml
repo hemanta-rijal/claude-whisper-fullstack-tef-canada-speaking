@@ -76,7 +76,7 @@ jobs:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
     needs: ci
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
@@ -119,7 +119,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     needs: docker
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     environment: production
 
     steps:
