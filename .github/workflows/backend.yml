@@ -140,9 +140,6 @@ jobs:
           script: |
             docker pull "$IMAGE"
 
-            # Shared network so frontend nginx can reach backend by hostname
-            docker network create app 2>/dev/null || true
-
             # Resolve the env file that holds secrets (never commit this to git)
             ENV_FILE_ARG=""
             for path in "$HOME/tef_backend/.env"; do

@@ -121,8 +121,6 @@ jobs:
           script: |
             docker pull "$IMAGE"
 
-            # Same network as the backend so nginx can proxy to http://backend:3000
-
             docker rm -f frontend 2>/dev/null || true
             docker run -d --name frontend --restart unless-stopped \
               --network host \
