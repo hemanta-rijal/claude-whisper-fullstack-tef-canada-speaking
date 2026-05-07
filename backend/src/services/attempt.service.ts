@@ -177,11 +177,14 @@ export async function* streamTurn(
     { role: 'candidate', content: transcript },
   ];
 
+  // Drain Claude's stream as fast as possible, firing TTS for each sentence immediately
+  // without blocking on the previous one. Yields audio in order once each resolves.
+  const ttsTasks: Array<{ sentence: string; promise: Promise<Buffer> }> = [];
   for await (const sentence of streamExaminerSentences(scenario, updatedHistory, section)) {
-    // Each sentence is TTS'd as soon as it arrives — we don't wait for the next one.
-    // LEARN: `await` inside a for-await loop is sequential here, but the key gain is
-    // that TTS starts on sentence 1 while Claude is still generating sentence 2.
-    const audioBuffer = await textToSpeech(sentence);
+    ttsTasks.push({ sentence, promise: textToSpeech(sentence) });
+  }
+  for (const { sentence, promise } of ttsTasks) {
+    const audioBuffer = await promise;
     yield {
       type: 'audio',
       sentenceText: sentence,

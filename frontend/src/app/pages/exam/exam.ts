@@ -78,10 +78,11 @@ export class Exam implements OnInit, OnDestroy {
   private examEnded = false;
 
   // ── Audio queue ────────────────────────────────────────────────────────────
-  // With streaming we receive multiple audio chunks (one per sentence).
-  // We push them into a queue and play them sequentially so they flow smoothly.
+  // Each incoming base64 chunk is decoded immediately into an AudioBuffer promise
+  // so decoding overlaps with playback of the previous sentence.
   // drainResolve is called when the queue empties — used by waitForAudioDone().
-  private audioQueue: string[] = [];
+  private playbackContext: AudioContext | null = null;
+  private audioQueue: Array<Promise<AudioBuffer>> = [];
   private isDraining = false;
   private drainResolve: (() => void) | null = null;
 
@@ -127,6 +128,7 @@ export class Exam implements OnInit, OnDestroy {
   async beginExam() {
     this.error.set('');
     this.state.set('processing');
+    this.playbackContext = new AudioContext();
 
     try {
       // Pass the scenarioId from the preview so the backend uses the same scenario
@@ -363,26 +365,46 @@ export class Exam implements OnInit, OnDestroy {
 
   // ── Audio queue ─────────────────────────────────────────────────────────────
 
-  // Push a base64 audio chunk onto the queue. If nothing is currently playing, start draining.
+  // Decode base64 opus bytes into an AudioBuffer using the persistent playback context.
+  // Called the moment a chunk arrives so decoding overlaps with playback of the prior sentence.
+  private decodeAudio(base64: string): Promise<AudioBuffer> {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return this.playbackContext!.decodeAudioData(bytes.buffer.slice(0));
+  }
+
+  // Play a decoded AudioBuffer via Web Audio API — lower latency than HTMLAudioElement.
+  private playAudioBuffer(buffer: AudioBuffer): Promise<void> {
+    return new Promise((resolve) => {
+      const source = this.playbackContext!.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.playbackContext!.destination);
+      source.onended = () => resolve();
+      source.start();
+    });
+  }
+
+  // Kick off decoding immediately and push the promise onto the queue.
+  // If nothing is currently playing, start draining.
   private queueAudio(base64: string): void {
-    this.audioQueue.push(base64);
+    this.audioQueue.push(this.decodeAudio(base64));
     if (!this.isDraining) {
       this.isDraining = true;
       void this.drainAudioQueue();
     }
   }
 
-  // Plays queued audio segments one at a time in order.
+  // Plays queued AudioBuffers one at a time in order.
   // New items pushed while draining are picked up automatically in the while loop.
   private async drainAudioQueue(): Promise<void> {
     while (this.audioQueue.length > 0) {
-      if (this.examEnded) break;  // don't play audio after exam ends
-      const base64 = this.audioQueue.shift()!;
-      await this.playBase64Audio(base64);
+      if (this.examEnded) break;
+      const buffer = await this.audioQueue.shift()!;
+      await this.playAudioBuffer(buffer);
     }
     this.audioQueue = [];
     this.isDraining = false;
-    // Notify waitForAudioDone() that we're finished
     if (this.drainResolve) {
       this.drainResolve();
       this.drainResolve = null;
@@ -437,15 +459,9 @@ export class Exam implements OnInit, OnDestroy {
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
-  // Converts a base64 MP3 string to an Audio element and plays it.
-  // Returns a Promise that resolves when playback ends.
+  // Decodes and plays a base64 opus string via Web Audio API.
   private playBase64Audio(base64: string): Promise<void> {
-    return new Promise((resolve) => {
-      const audio = new Audio(`data:audio/mp3;base64,${base64}`);
-      audio.onended = () => resolve();
-      audio.onerror = () => resolve(); // don't block on audio errors
-      audio.play().catch(() => resolve());
-    });
+    return this.decodeAudio(base64).then(buf => this.playAudioBuffer(buf));
   }
 
   private startTimer() {
@@ -482,6 +498,8 @@ export class Exam implements OnInit, OnDestroy {
   private cleanup() {
     this.stopListening();
     this.stopTimer();
+    this.playbackContext?.close();
+    this.playbackContext = null;
   }
 
   // Formats seconds as MM:SS for the timer display

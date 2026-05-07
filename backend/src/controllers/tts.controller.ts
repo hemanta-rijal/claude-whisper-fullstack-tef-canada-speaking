@@ -9,10 +9,10 @@ import type { TtsRequestBody } from '../schemas/tts.schemas.js';
 export async function postTtsController(req: Request, res: Response): Promise<void> {
   const { text, lang } = req.body as TtsRequestBody;
   try {
-    const mp3 = await textToSpeech(text, lang);
-    res.setHeader('Content-Type', 'audio/mpeg');
+    const audio = await textToSpeech(text, lang);
+    res.setHeader('Content-Type', 'audio/ogg; codecs=opus');
     res.setHeader('Cache-Control', 'private, max-age=3600');
-    res.send(mp3);
+    res.send(audio);
   } catch (err) {
     console.error('[tts]', err);
     res.status(502).json({ error: 'Text-to-speech failed' });

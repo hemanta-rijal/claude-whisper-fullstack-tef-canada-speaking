@@ -78,7 +78,7 @@ export class TtsClipCacheService {
 
   /** Stable id — if backend voice/model changes materially, bump `SCHEMA` to invalidate old blobs. */
   private async clipId(lang: ClipLang, text: string): Promise<string> {
-    const SCHEMA = 'v1-gpt4o-mini-tts-coral';
+    const SCHEMA = 'v2-gpt4o-mini-tts-coral-opus';
     const payload = `${SCHEMA}|${lang}|${text}`;
     if (typeof crypto !== 'undefined' && crypto.subtle) {
       const enc = new TextEncoder().encode(payload);

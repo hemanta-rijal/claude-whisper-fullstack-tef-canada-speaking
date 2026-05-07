@@ -27,12 +27,11 @@ export async function textToSpeech(text: string, lang: TtsLang = 'fr'): Promise<
     model: 'gpt-4o-mini-tts',
     voice: 'coral',
     input: text,
-    response_format: 'mp3',
+    response_format: 'opus',
     speed,
     instructions,
   });
 
-  // The OpenAI SDK returns a Response object — convert to Buffer for Express to send as binary.
   const arrayBuffer = await response.arrayBuffer();
   return Buffer.from(arrayBuffer);
 }
