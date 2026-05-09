@@ -24,20 +24,14 @@ services:
       context: ./backend
       target: development
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
       PORT: 3000
       DATABASE_URL: postgresql://app:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/app
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       COOKIE_SECURE: "false"
       APP_URL: ${APP_URL:-http://localhost:4200}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_SECURE: ${SMTP_SECURE:-false}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_FROM: ${SMTP_FROM:-noreply@tef-canada.app}
     volumes:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma

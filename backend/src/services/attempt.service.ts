@@ -177,20 +177,47 @@ export async function* streamTurn(
     { role: 'candidate', content: transcript },
   ];
 
-  // Drain Claude's stream as fast as possible, firing TTS for each sentence immediately
-  // without blocking on the previous one. Yields audio in order once each resolves.
-  const ttsTasks: Array<{ sentence: string; promise: Promise<Buffer> }> = [];
-  for await (const sentence of streamExaminerSentences(scenario, updatedHistory, section)) {
-    ttsTasks.push({ sentence, promise: textToSpeech(sentence) });
+  // True pipeline: fire TTS the moment each sentence arrives from Claude,
+  // and yield each audio chunk as soon as its TTS resolves — without waiting
+  // for Claude to finish the whole response first.
+  //
+  // The consumer (WebSocket handler) receives sentence 1 audio as soon as
+  // TTS 1 is ready, while Claude is still generating sentence 2 and TTS 2
+  // is already running in parallel.
+  type PipelineItem = { sentence: string; audioPromise: Promise<Buffer> };
+  const queue: PipelineItem[] = [];
+  let claudeDone = false;
+  let notify: (() => void) | null = null;
+
+  function wake(): void {
+    const fn = notify;
+    notify = null;
+    fn?.();
   }
-  for (const { sentence, promise } of ttsTasks) {
-    const audioBuffer = await promise;
-    yield {
-      type: 'audio',
-      sentenceText: sentence,
-      base64: audioBuffer.toString('base64'),
-    };
+
+  // Runs Claude stream in the background, pushing TTS promises as each sentence arrives.
+  const claudeStream = (async () => {
+    for await (const sentence of streamExaminerSentences(scenario, updatedHistory, section)) {
+      queue.push({ sentence, audioPromise: textToSpeech(sentence) });
+      wake();
+    }
+    claudeDone = true;
+    wake();
+  })();
+
+  // Consume queue items in order, yielding each as soon as its TTS resolves.
+  let i = 0;
+  while (!claudeDone || i < queue.length) {
+    if (i >= queue.length) {
+      await new Promise<void>(r => { notify = r; });
+    }
+    if (i >= queue.length) continue;
+    const { sentence, audioPromise } = queue[i++]!;
+    const audio = await audioPromise;
+    yield { type: 'audio', sentenceText: sentence, base64: audio.toString('base64') };
   }
+
+  await claudeStream; // surface any errors from the background producer
 
   yield { type: 'done' };
 }
