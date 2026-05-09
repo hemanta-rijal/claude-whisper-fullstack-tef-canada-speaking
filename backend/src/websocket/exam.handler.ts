@@ -124,6 +124,16 @@ async function handleEndExam(
 }
 
 export function registerExamNamespace(httpServer: Server): void {
+  const appUrl = process.env['APP_URL'] ?? '';
+  // Accept both the configured APP_URL and the localhost dev origin.
+  // Also accept https:// variant automatically if APP_URL was written with http://.
+  const allowedOrigins = [
+    'http://localhost:4200',
+    ...(appUrl ? [appUrl, appUrl.replace(/^http:/, 'https:')] : []),
+  ].filter(Boolean);
+
+  console.log('[ws] allowed CORS origins:', allowedOrigins);
+
   const io = new SocketIOServer<
     ClientToServerEvents,
     ServerToClientEvents,
@@ -131,9 +141,14 @@ export function registerExamNamespace(httpServer: Server): void {
     SocketData
   >(httpServer, {
     cors: {
-      // APP_URL holds the frontend origin (set in .env / docker env).
-      // Falls back to localhost for local dev without a configured APP_URL.
-      origin: process.env['APP_URL'] ?? 'http://localhost:4200',
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.warn(`[ws] CORS rejected origin: ${origin}`);
+          callback(new Error(`Origin ${origin} not allowed`));
+        }
+      },
       credentials: true,
     },
   });
