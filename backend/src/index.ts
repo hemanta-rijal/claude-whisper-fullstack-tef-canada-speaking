@@ -1,9 +1,11 @@
 // IMPORTANT: import `./bootstrapEnv.js` first (see that file) so `backend/.env` is loaded
 // before modules like Prisma that may read `process.env` at import time.
 import './bootstrapEnv.js';
+import { createServer } from 'http';
 import { app } from './server.js';
 import { getEnv } from './lib/env.js';
 import { prisma } from './lib/prisma.js';
+import { registerExamNamespace } from './websocket/exam.handler.js';
 
 const { port, nodeEnv, databaseUrl } = getEnv();
 
@@ -30,10 +32,13 @@ if (nodeEnv === 'development') {
 // DB-specific: `prisma.$connect()` opens a connection pool to MySQL.
 // If this fails, your `DATABASE_URL` is wrong, MySQL isn't running/reachable, or credentials/DB name is invalid.
 // LEARN: "connection pool" + why servers must not open a new DB connection for every request
+const httpServer = createServer(app);
+registerExamNamespace(httpServer);
+
 void prisma
   .$connect()
   .then(() => {
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log(`Backend listening on http://localhost:${port}`);
     });
   })
