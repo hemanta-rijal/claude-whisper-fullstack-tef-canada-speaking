@@ -107,9 +107,11 @@ export class Exam implements OnInit, OnDestroy {
             },
             onExaminerAudioStart: () => {
               if (this.examEnded) return;
-              // First audio chunk just arrived — mute mic NOW before echo builds up.
-              // setMicMuted stops all audio reaching OpenAI, so the VAD has nothing
-              // to trigger on regardless — no session.update needed.
+              // Pause server-side VAD first so OpenAI stops processing any audio
+              // input immediately — this is the primary guard against the examiner
+              // audio being interrupted mid-sentence.
+              this.examRealtime.setVadPaused(true);
+              // Then mute the mic track and clear whatever is already in the buffer.
               this.examRealtime.setMicMuted(true);
               this.examRealtime.clearInputBuffer();
               this.state.set('ai-speaking');
@@ -121,8 +123,9 @@ export class Exam implements OnInit, OnDestroy {
             },
             onResponseDone: () => {
               if (this.examEnded) return;
-              // Full response finished — unmute mic so candidate can respond.
+              // Unmute and re-enable VAD together so the candidate can respond.
               this.examRealtime.setMicMuted(false);
+              this.examRealtime.setVadPaused(false);
               this.state.set('listening');
             },
             onError: (message) => {

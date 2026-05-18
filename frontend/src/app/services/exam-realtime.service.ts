@@ -23,6 +23,9 @@ type RealtimeUsage = {
   input_tokens?: number;
   output_tokens?: number;
   total_tokens?: number;
+  // Breakdown of output tokens — key for diagnosing max_output_tokens cuts.
+  // Audio tokens accumulate at ~32 tokens/second; text tokens are the transcript.
+  output_token_details?: { text_tokens?: number; audio_tokens?: number };
 };
 
 /** Subset of fields we read from OpenAI Realtime server events. */
@@ -34,7 +37,10 @@ type RealtimeServerEvent = {
   // Populated on response.done — contains the full output + usage stats.
   response?: {
     id?: string;
+    // 'completed' | 'cancelled' | 'failed' | 'incomplete' (hit max_output_tokens)
     status?: string;
+    // Set when status !== 'completed' — reason explains why it stopped early.
+    status_details?: { type?: string; reason?: string; error?: { code?: string; message?: string } } | null;
     output?: RealtimeOutputItem[];
     usage?: RealtimeUsage;
   };
@@ -170,7 +176,6 @@ export class ExamRealtimeService {
 
     // Per-response state tracked via closure — reset on each new response.
     let audioStartedThisResponse = false;
-    let audioBytesThisResponse = 0;  // accumulated PCM bytes for duration estimate
     let responseHadAudio = false;    // true if any response.audio.delta fired
 
     dc.addEventListener('message', (e: MessageEvent<string>) => {
@@ -190,10 +195,6 @@ export class ExamRealtimeService {
       }
 
       if (t === 'response.audio.delta') {
-        // Accumulate audio bytes so we can estimate playback duration.
-        // delta is base64-encoded PCM16 at 24 kHz — 4 base64 chars ≈ 3 raw bytes.
-        if (ev.delta) audioBytesThisResponse += Math.floor(ev.delta.length * 0.75);
-
         if (!audioStartedThisResponse) {
           audioStartedThisResponse = true;
           responseHadAudio = true;
@@ -202,27 +203,42 @@ export class ExamRealtimeService {
       }
 
       if (t === 'response.audio.done') {
-        // All audio chunks have been pushed to the WebRTC track. Calculate how long
-        // the browser still needs to play them: PCM16 at 24 kHz = 48 000 bytes/s.
-        const playbackMs = Math.ceil(audioBytesThisResponse / 48);
-        // Add a buffer for the WebRTC playout queue and VAD stabilisation after silence.
-        const PLAYOUT_BUFFER_MS = 300;
+        // All audio chunks are queued in the WebRTC track. WebRTC audio is real-time —
+        // by the time this event arrives on the data channel, most audio has already
+        // played. We cover the remaining jitter/playout buffer + data-channel/RTP skew.
+        // 1200ms is conservative — VAD is already paused so there is no echo risk in
+        // waiting longer; the only cost is a slightly delayed mic re-enable.
+        const PLAYOUT_BUFFER_MS = 1200;
 
         if (this.pendingUnmute) clearTimeout(this.pendingUnmute);
         this.pendingUnmute = setTimeout(() => {
           this.pendingUnmute = null;
           handlers.onResponseDone();
-        }, playbackMs + PLAYOUT_BUFFER_MS);
+        }, PLAYOUT_BUFFER_MS);
       }
 
       if (t === 'response.done') {
         audioStartedThisResponse = false;
 
+        // Always log stop reason so audio-cut issues are diagnosable in any environment.
+        const status = ev.response?.status ?? 'unknown';
+        const details = ev.response?.status_details;
+        const usage = ev.response?.usage;
+        const outDetails = usage?.output_token_details;
+        console.log(
+          `[realtime] response.done  status=${status}` +
+          (details?.reason ? `  reason=${details.reason}` : '') +
+          (details?.error ? `  error=${details.error.code}:${details.error.message}` : '') +
+          `  tokens(total=${usage?.total_tokens ?? '?'}` +
+          `  in=${usage?.input_tokens ?? '?'}` +
+          `  out=${usage?.output_tokens ?? '?'}` +
+          `  out_text=${outDetails?.text_tokens ?? '?'}` +
+          `  out_audio=${outDetails?.audio_tokens ?? '?'})`,
+        );
+
         if (!environment.production) {
-          const usage = ev.response?.usage;
           const transcript = extractOutputTranscript(ev.response?.output);
-          console.debug('[realtime] response.done — status:', ev.response?.status,
-            '| usage:', usage, '| output transcript:', transcript || '(empty)');
+          if (transcript) console.debug('[realtime] output transcript:', transcript);
         }
 
         // Text-only responses produce no audio.delta/audio.done events — fire
@@ -232,7 +248,6 @@ export class ExamRealtimeService {
         }
 
         responseHadAudio = false;
-        audioBytesThisResponse = 0;
       }
 
       // Examiner transcript — fires when the output audio transcription is ready.
@@ -370,7 +385,9 @@ export class ExamRealtimeService {
     this.sendClientEvent({
       type: 'session.update',
       session: {
-        turn_detection: paused ? null : { type: 'semantic_vad', eagerness: 'medium' },
+        // null disables server VAD entirely; restore with the same eagerness
+        // used in the session config so behaviour is consistent across turns.
+        turn_detection: paused ? null : { type: 'semantic_vad', eagerness: 'low' },
       },
     });
   }

@@ -51,8 +51,10 @@ export async function createExamRealtimeClientSecret(opts: {
       type: 'realtime' as const,
       model: 'gpt-realtime-2',
       instructions,
-      // Match examiner brevity (1–3 sentences); avoids runaway audio cost.
-      max_output_tokens: 220,
+      // 1–3 spoken sentences. Audio tokens accumulate at ~32/second so a 10-second
+      // response alone costs ~320 audio tokens + ~80 text tokens = ~400 total.
+      // 500 gives headroom without allowing runaway responses.
+      max_output_tokens: 500,
       audio: {
         input: {
           format: {
